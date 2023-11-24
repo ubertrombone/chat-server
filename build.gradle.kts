@@ -27,6 +27,7 @@ dependencies {
     implementation(deps.codec.commons)
     implementation(deps.ktor.serverCore)
     implementation(deps.ktor.serverAuth)
+    implementation(deps.ktor.serverAuthJwt)
     implementation(deps.ktor.serverHostCommon)
     implementation(deps.ktor.serverStatusPages)
     implementation(deps.ktor.serverCallLogging)
