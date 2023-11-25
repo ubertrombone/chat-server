@@ -1,14 +1,16 @@
 package com.joshrose.routes
 
-import com.joshrose.plugins.Security
 import com.joshrose.plugins.dao
-import com.joshrose.requests.*
-import com.joshrose.validations.*
+import com.joshrose.requests.AddFriendRequest
+import com.joshrose.requests.RemoveFriendRequest
+import com.joshrose.validations.validateAddFriend
+import com.joshrose.validations.validateRemoveFriend
 import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -25,8 +27,8 @@ fun Route.friendsRoute() {
 
         authenticate {
             get {
-                val id = call.principal<Security>()!!.id
-                val friendList = dao.user(id)!!.friendList
+                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val friendList = dao.user(user)!!.friendList
                 call.respond(OK, friendList ?: "")
             }
 
@@ -37,6 +39,10 @@ fun Route.friendsRoute() {
                     call.respond(BadRequest)
                     return@post
                 }
+
+                // TODO:
+                //  1. ValidateAddFriend -- should only check if otherUser exists
+                //  2. In route body, check if otherUser is already in current User's friend list
 
                 val user = dao.user(request.id)!!
                 val friendList = user.friendList?.split(";") ?: listOf()
@@ -57,6 +63,10 @@ fun Route.friendsRoute() {
                     call.respond(BadRequest)
                     return@post
                 }
+
+                // TODO:
+                //  1. ValidateAddFriend -- should only check if otherUser exists
+                //  2. In route body, check if otherUser is not in current User's friend list
 
                 val user = dao.user(request.id)!!
                 val friendList = user.friendList?.split(";")!!

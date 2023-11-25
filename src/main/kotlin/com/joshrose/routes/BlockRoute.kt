@@ -1,6 +1,5 @@
 package com.joshrose.routes
 
-import com.joshrose.plugins.Security
 import com.joshrose.plugins.dao
 import com.joshrose.requests.BlockUserRequest
 import com.joshrose.requests.UnblockUserRequest
@@ -11,6 +10,7 @@ import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -26,8 +26,8 @@ fun Route.blockRoute() {
 
         authenticate {
             get {
-                val id = call.principal<Security>()!!.id
-                val blockList = dao.user(id)!!.blockedList
+                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val blockList = dao.user(user)!!.blockedList
                 call.respond(OK, blockList ?: "")
             }
 
@@ -38,6 +38,10 @@ fun Route.blockRoute() {
                     call.respond(BadRequest)
                     return@post
                 }
+
+                // TODO:
+                //  1. ValidateBlockRequest -- should only check if otherUser exists
+                //  2. In route body, check if otherUser is already in current User's block list
 
                 val user = dao.user(request.id)!!
                 val blockedList = user.blockedList?.split(";")
@@ -57,6 +61,8 @@ fun Route.blockRoute() {
                     call.respond(BadRequest)
                     return@post
                 }
+
+                // TODO: Validate block isn't required; use logic here instead
 
                 val user = dao.user(request.id)!!
                 val blockedList = user.blockedList!!.split(";")

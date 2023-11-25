@@ -7,7 +7,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
-import kotlinx.serialization.Serializable
 
 fun Application.configureSecurity() {
     val jwtDomain = environment.config.property("jwt.issuer").getString()
@@ -24,9 +23,7 @@ fun Application.configureSecurity() {
             )
             validate { credential ->
                 with(credential.payload) {
-                    if (getClaim("username").asString() != "")
-                        JWTPrincipal(credential.payload)
-                    else null
+                    if (getClaim("username").asString() != "") JWTPrincipal(credential.payload) else null
                 }
             }
             challenge { _, _ ->
@@ -34,18 +31,4 @@ fun Application.configureSecurity() {
             }
         }
     }
-
-    authentication {
-        basic("old") {
-            realm = "Chat Server"
-            validate { credentials ->
-                val username = credentials.name.lowercase()
-                val password = credentials.password
-                if (dao.checkPassword(username, password)) Security(dao.loginUser(username), username) else null
-            }
-        }
-    }
 }
-
-@Serializable
-data class Security(val id: Int, val username: String) : Principal

@@ -8,8 +8,6 @@ import io.ktor.server.plugins.requestvalidation.ValidationResult.*
 
 fun RequestValidationConfig.validateStatus() {
     validate<StatusRequest> { request ->
-        request.status?.let {
-            if (it.length > MAX_STATUS_LENGTH) Invalid(STATUS_TOO_LONG) else Valid
-        } ?: Valid
+        request.status?.let { if (it.length > MAX_STATUS_LENGTH) Invalid(STATUS_TOO_LONG) else Valid } ?: Valid
     }
 }

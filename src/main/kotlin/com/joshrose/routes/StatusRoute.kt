@@ -1,6 +1,5 @@
 package com.joshrose.routes
 
-import com.joshrose.plugins.Security
 import com.joshrose.plugins.dao
 import com.joshrose.requests.StatusRequest
 import com.joshrose.validations.validateStatus
@@ -9,6 +8,7 @@ import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -23,8 +23,8 @@ fun Route.statusRoute() {
 
         authenticate {
             get {
-                val id = call.principal<Security>()!!.id
-                val status = dao.user(id)!!.status
+                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val status = dao.user(user)!!.status
                 call.respond(OK, status ?: "")
             }
 
@@ -36,7 +36,10 @@ fun Route.statusRoute() {
                     return@post
                 }
 
-                val user = dao.user(request.id)!!
+                // TODO: Remove ID
+
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
+                val user = dao.user(username)!!
                 dao.editUser(
                     user.copy(
                         lastOnline = LocalDateTime.now(),
