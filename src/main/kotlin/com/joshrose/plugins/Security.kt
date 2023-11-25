@@ -10,7 +10,6 @@ import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 
 fun Application.configureSecurity() {
-    val jwtAudience = environment.config.property("jwt.audience").getString()
     val jwtDomain = environment.config.property("jwt.issuer").getString()
     val jwtRealm = environment.config.property("jwt.realm").getString()
     val jwtSecret = environment.config.property("jwt.secret").getString()
@@ -20,12 +19,12 @@ fun Application.configureSecurity() {
             verifier(
                 JWT
                     .require(Algorithm.HMAC256(jwtSecret))
-                    .withAudience(jwtAudience)
                     .withIssuer(jwtDomain)
                     .build()
             )
             validate { credential ->
                 with(credential.payload) {
+                    println("THIS: ${this.claims}")
                     if (getClaim("email").asString() != "")
                         JWTPrincipal(credential.payload)
                     else null

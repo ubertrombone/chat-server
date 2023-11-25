@@ -18,11 +18,7 @@ import io.ktor.server.routing.*
 import java.time.LocalDateTime
 import java.util.*
 
-fun Route.loginRoute(
-    audience: String,
-    issuer: String,
-    secret: String
-) {
+fun Route.loginRoute(issuer: String, secret: String) {
     route("/login") {
         install(RequestValidation) {
             validateLogin()
@@ -37,7 +33,6 @@ fun Route.loginRoute(
             }
 
             val token = JWT.create().apply {
-                withAudience(audience)
                 withIssuer(issuer)
                 withClaim("email", user.email)
                 withExpiresAt(Date(System.currentTimeMillis() + 600000))
@@ -50,6 +45,8 @@ fun Route.loginRoute(
         post("/logout") {
             val principal = call.principal<JWTPrincipal>()
             val email = principal!!.payload.getClaim("email").asString()
+            val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
+            println("EXPIRES AT: $expiresAt")
 
             val id = dao.loginUser(email)
             val user = dao.user(id)!! // TODO: this can all be simplified, probably need to rework how I set up the DB

@@ -31,7 +31,6 @@ val friendRequestDao: DAOFriendRequest = DAOFriendRequestImpl()
 val groupChatDao: DAOGroupChat = DAOGroupChatImpl()
 
 fun Application.configureRouting() {
-    val audience = environment.config.property("jwt.audience").getString()
     val domain = environment.config.property("jwt.issuer").getString()
     val secret = environment.config.property("jwt.secret").getString()
 
@@ -39,7 +38,7 @@ fun Application.configureRouting() {
         statusPages()
     }
     routing {
-        loginRoute(audience, domain, secret)
+        loginRoute(domain, secret)
         registerRoute()
         settingsRoute()
         friendsRoute()
