@@ -4,7 +4,6 @@ import com.joshrose.plugins.dao
 import com.joshrose.requests.AccountRequest
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.security.getHashWithSalt
-import com.joshrose.validations.validateEmail
 import com.joshrose.validations.validatePassword
 import com.joshrose.validations.validateUsername
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -20,7 +19,6 @@ fun Route.registerRoute() {
     route("/register") {
         install(RequestValidation) {
             validateUsername()
-            validateEmail()
             validatePassword()
         }
 
@@ -33,9 +31,8 @@ fun Route.registerRoute() {
             }
 
             dao.addNewUser(
-                email = request.email.lowercase(),
-                password = getHashWithSalt(request.password),
                 username = request.username,
+                password = getHashWithSalt(request.password),
                 isOnline = true,
                 lastOnline = LocalDateTime.now(),
                 friendList = null,

@@ -6,7 +6,6 @@ import java.time.LocalDateTime
 
 data class User(
     val id: Int,
-    val email: String,
     val password: String,
     val username: String,
     val isOnline: Boolean,
@@ -18,7 +17,6 @@ data class User(
 
 object Users: Table() {
     val id = integer("id").autoIncrement()
-    val email = varchar("email", 128)
     val password = varchar("password", 500)
     val username = varchar("username", 24)
     val isOnline = bool("isOnline")

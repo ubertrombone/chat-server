@@ -24,8 +24,7 @@ fun Application.configureSecurity() {
             )
             validate { credential ->
                 with(credential.payload) {
-                    println("THIS: ${this.claims}")
-                    if (getClaim("email").asString() != "")
+                    if (getClaim("username").asString() != "")
                         JWTPrincipal(credential.payload)
                     else null
                 }
@@ -40,13 +39,13 @@ fun Application.configureSecurity() {
         basic("old") {
             realm = "Chat Server"
             validate { credentials ->
-                val email = credentials.name.lowercase()
+                val username = credentials.name.lowercase()
                 val password = credentials.password
-                if (dao.checkPassword(email, password)) Security(dao.loginUser(email), email) else null
+                if (dao.checkPassword(username, password)) Security(dao.loginUser(username), username) else null
             }
         }
     }
 }
 
 @Serializable
-data class Security(val id: Int, val email: String) : Principal
+data class Security(val id: Int, val username: String) : Principal

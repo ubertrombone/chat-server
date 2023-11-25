@@ -14,9 +14,8 @@ val dao: DAOUser = DAOUserImpl().apply {
     runBlocking {
         if (allUsers().isEmpty()) {
             addNewUser(
-                email = "test@baylor.edu",
-                password = getHashWithSalt("p@ssw0rd"),
                 username = "ubertrombone",
+                password = getHashWithSalt("p@ssw0rd"),
                 isOnline = true,
                 lastOnline = LocalDateTime.now(),
                 friendList = null,

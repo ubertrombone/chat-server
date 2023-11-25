@@ -5,7 +5,7 @@ package com.joshrose.dao
 import com.joshrose.dao.DatabaseFactory.dbQuery
 import com.joshrose.models.User
 import com.joshrose.models.Users
-import com.joshrose.models.Users.email
+import com.joshrose.models.Users.username
 import com.joshrose.security.checkHashForPassword
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -14,7 +14,6 @@ import java.time.LocalDateTime
 class DAOUserImpl : DAOUser {
     private fun resultRowToUser(row: ResultRow) = User(
         id = row[Users.id],
-        email = row[email],
         password = row[Users.password],
         username = row[Users.username],
         isOnline = row[Users.isOnline],
@@ -34,18 +33,17 @@ class DAOUserImpl : DAOUser {
             .singleOrNull()
     }
 
-    override suspend fun loginUser(email: String): Int = dbQuery {
+    override suspend fun loginUser(username: String): Int = dbQuery {
         Users
-            .select { Users.email eq email }
+            .select { Users.username eq username }
             .map(::resultRowToUser)
             .single()
             .id
     }
 
     override suspend fun addNewUser(
-        email: String,
-        password: String,
         username: String,
+        password: String,
         isOnline: Boolean,
         lastOnline: LocalDateTime,
         friendList: String?,
@@ -53,9 +51,8 @@ class DAOUserImpl : DAOUser {
         status: String?
     ): User? = dbQuery {
         val insertStatement = Users.insert {
-            it[Users.email] = email
-            it[Users.password] = password
             it[Users.username] = username
+            it[Users.password] = password
             it[Users.isOnline] = isOnline
             it[Users.lastOnline] = lastOnline
             it[Users.friendList] = friendList
@@ -66,10 +63,9 @@ class DAOUserImpl : DAOUser {
     }
 
     override suspend fun editUser(user: User): Boolean = dbQuery {
-        Users.update({ email eq user.email }) {
-            it[email] = user.email
-            it[password] = user.password
+        Users.update({ username eq user.username }) {
             it[username] = user.username
+            it[password] = user.password
             it[isOnline] = user.isOnline
             it[lastOnline] = user.lastOnline
             it[friendList] = user.friendList
@@ -86,13 +82,9 @@ class DAOUserImpl : DAOUser {
         Users.select { Users.username eq username }.count().toInt() > 0
     }
 
-    override suspend fun emailExists(email: String): Boolean = dbQuery {
-        Users.select { Users.email eq email }.count().toInt() > 0
-    }
-
-    override suspend fun checkPassword(email: String, passwordToCheck: String): Boolean = dbQuery {
+    override suspend fun checkPassword(username: String, passwordToCheck: String): Boolean = dbQuery {
         val actualPassword = Users
-            .select { Users.email eq email }
+            .select { Users.username eq username }
             .map(::resultRowToUser)
             .singleOrNull()?.password ?: return@dbQuery false
 

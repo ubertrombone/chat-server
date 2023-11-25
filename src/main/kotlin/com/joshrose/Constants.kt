@@ -1,7 +1,7 @@
 package com.joshrose
 
 object Constants {
-    const val INCORRECT_CREDS = "The email or password is incorrect"
+    const val INCORRECT_CREDS = "The username or password is incorrect"
     const val INCORRECT_PASSWORD = "Incorrect password"
     const val PASSWORD_REQUIREMENT_MIN = 12
     const val REQUIREMENT_MAX = 24
@@ -16,8 +16,6 @@ object Constants {
     const val USERNAME_TOO_LONG = "Username must be no more than $REQUIREMENT_MAX characters!"
     const val USERNAME_TOO_SHORT = "Username must contain at least 1 character!"
     const val INVALID_CHARS_USERNAME = "Username can only contain alpha-numeric characters!"
-    const val EMAIL_EXISTS = "Email already exists!"
-    const val INVALID_EMAIL = "Invalid email!"
     const val FRIEND_ALREADY_ADDED = "Friend already added!"
     const val FRIEND_DOESNT_EXIST = "User not in friend list!"
     const val USER_ALREADY_BLOCKED = "User already blocked!"

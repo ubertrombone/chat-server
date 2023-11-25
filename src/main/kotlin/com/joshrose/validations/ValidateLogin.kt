@@ -8,7 +8,7 @@ import io.ktor.server.plugins.requestvalidation.ValidationResult.*
 
 fun RequestValidationConfig.validateLogin() {
     validate<LoginRequest> { credentials ->
-        if (!dao.checkPassword(credentials.email.lowercase(), credentials.password))
+        if (!dao.checkPassword(credentials.username.lowercase(), credentials.password))
             Invalid(INCORRECT_CREDS)
         else Valid
     }

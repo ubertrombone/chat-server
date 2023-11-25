@@ -28,9 +28,9 @@ fun Route.settingsRoute() {
 
         authenticate {
             get {
-                val email = call.principal<Security>()?.email
-                email?.let {
-                    call.respondText("Hello, $email!")
+                val username = call.principal<Security>()?.username
+                username?.let {
+                    call.respondText("Hello, $username!")
                 } ?: call.respond(BadRequest)
             }
 

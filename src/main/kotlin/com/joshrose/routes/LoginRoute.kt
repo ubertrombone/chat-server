@@ -34,7 +34,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
 
             val token = JWT.create().apply {
                 withIssuer(issuer)
-                withClaim("email", user.email)
+                withClaim("username", user.username)
                 withExpiresAt(Date(System.currentTimeMillis() + 600000))
             }.sign(Algorithm.HMAC256(secret))
             call.respond(hashMapOf("token" to token))
@@ -44,11 +44,11 @@ fun Route.loginRoute(issuer: String, secret: String) {
     authenticate {
         post("/logout") {
             val principal = call.principal<JWTPrincipal>()
-            val email = principal!!.payload.getClaim("email").asString()
+            val username = principal!!.payload.getClaim("username").asString()
             val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
             println("EXPIRES AT: $expiresAt")
 
-            val id = dao.loginUser(email)
+            val id = dao.loginUser(username)
             val user = dao.user(id)!! // TODO: this can all be simplified, probably need to rework how I set up the DB
             dao.editUser(user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
             call.respond(OK, SimpleResponse(true, "You are now logged out!"))

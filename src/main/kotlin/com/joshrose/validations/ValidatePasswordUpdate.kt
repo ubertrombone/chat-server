@@ -17,32 +17,16 @@ import io.ktor.server.plugins.requestvalidation.ValidationResult.*
 fun RequestValidationConfig.validatePasswordUpdate() {
     val invalidChars = listOf(' ', '\\', '`', '#')
     validate<UpdatePasswordRequest> { passwordRequest ->
-        val email = dao.user(passwordRequest.id)!!.email
+        val username = dao.user(passwordRequest.id)!!.username
         when {
-            !dao.checkPassword(email, passwordRequest.oldPassword) ->
-                Invalid(INCORRECT_PASSWORD)
-
-            passwordRequest.newPassword != passwordRequest.newPasswordConfirm ->
-                Invalid(PASSWORDS_DONT_MATCH)
-
-            passwordRequest.newPassword == passwordRequest.oldPassword ->
-                Invalid(PASSWORD_MUST_BE_NEW)
-
-            passwordRequest.newPassword.length < PASSWORD_REQUIREMENT_MIN ->
-                Invalid(PASSWORD_SHORT)
-
-            passwordRequest.newPassword.length > REQUIREMENT_MAX ->
-                Invalid(PASSWORD_LONG)
-
-            !passwordRequest.newPassword.contains(Regex("^(?=.*[0-9])")) ->
-                Invalid(PASSWORD_REQUIRED_CHARS)
-
-            !passwordRequest.newPassword.contains(Regex("^(?=.*[a-zA-Z])")) ->
-                Invalid(PASSWORD_REQUIRED_CHARS)
-
-            passwordRequest.newPassword.any { invalidChars.contains(it) } ->
-                Invalid(INVALID_CHARS_PASSWORD)
-
+            !dao.checkPassword(username, passwordRequest.oldPassword) -> Invalid(INCORRECT_PASSWORD)
+            passwordRequest.newPassword != passwordRequest.newPasswordConfirm -> Invalid(PASSWORDS_DONT_MATCH)
+            passwordRequest.newPassword == passwordRequest.oldPassword -> Invalid(PASSWORD_MUST_BE_NEW)
+            passwordRequest.newPassword.length < PASSWORD_REQUIREMENT_MIN -> Invalid(PASSWORD_SHORT)
+            passwordRequest.newPassword.length > REQUIREMENT_MAX -> Invalid(PASSWORD_LONG)
+            !passwordRequest.newPassword.contains(Regex("^(?=.*[0-9])")) -> Invalid(PASSWORD_REQUIRED_CHARS)
+            !passwordRequest.newPassword.contains(Regex("^(?=.*[a-zA-Z])")) -> Invalid(PASSWORD_REQUIRED_CHARS)
+            passwordRequest.newPassword.any { invalidChars.contains(it) } -> Invalid(INVALID_CHARS_PASSWORD)
             else -> Valid
         }
     }
