@@ -6,6 +6,7 @@ import java.time.LocalDateTime
 interface DAOUser {
     suspend fun allUsers(): List<User>
     suspend fun user(id: Int): User?
+    suspend fun user(username: String): User?
     suspend fun loginUser(username: String): Int
     suspend fun addNewUser(
         username: String,

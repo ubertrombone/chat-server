@@ -48,8 +48,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
             val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
             println("EXPIRES AT: $expiresAt")
 
-            val id = dao.loginUser(username)
-            val user = dao.user(id)!! // TODO: this can all be simplified, probably need to rework how I set up the DB
+            val user = dao.user(username)!!
             dao.editUser(user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
             call.respond(OK, SimpleResponse(true, "You are now logged out!"))
         }

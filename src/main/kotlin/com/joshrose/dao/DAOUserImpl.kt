@@ -33,6 +33,13 @@ class DAOUserImpl : DAOUser {
             .singleOrNull()
     }
 
+    override suspend fun user(username: String): User? = dbQuery {
+        Users
+            .select { Users.username eq username }
+            .map(::resultRowToUser)
+            .singleOrNull()
+    }
+
     override suspend fun loginUser(username: String): Int = dbQuery {
         Users
             .select { Users.username eq username }
