@@ -1,48 +1,59 @@
 package com.joshrose.routes
 
+import com.auth0.jwt.JWT
+import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.plugins.dao
 import com.joshrose.requests.LoginRequest
-import com.joshrose.requests.LogoutRequest
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.validations.validateLogin
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.time.LocalDateTime
+import java.util.*
 
-fun Route.loginRoute() {
+fun Route.loginRoute(
+    audience: String,
+    issuer: String,
+    secret: String
+) {
     route("/login") {
         install(RequestValidation) {
             validateLogin()
         }
 
         post {
-            try {
+            val user = try {
                 call.receive<LoginRequest>()
             } catch (e: ContentTransformationException) {
                 call.respond(BadRequest)
                 return@post
             }
 
-            call.respond(OK, SimpleResponse(true, "You are now logged in!"))
+            val token = JWT.create().apply {
+                withAudience(audience)
+                withIssuer(issuer)
+                withClaim("email", user.email)
+                withExpiresAt(Date(System.currentTimeMillis() + 600000))
+            }.sign(Algorithm.HMAC256(secret))
+            call.respond(hashMapOf("token" to token))
         }
+    }
 
+    authenticate {
         post("/logout") {
-            val request = try {
-                call.receive<LogoutRequest>()
-            } catch (e: ContentTransformationException) {
-                call.respond(BadRequest)
-                return@post
-            }
+            val principal = call.principal<JWTPrincipal>()
+            val email = principal!!.payload.getClaim("email").asString()
 
-            val user = dao.user(request.id)!!
-            dao.editUser(
-                user.copy(isOnline = request.isOnline, lastOnline = LocalDateTime.now())
-            )
+            val id = dao.loginUser(email)
+            val user = dao.user(id)!! // TODO: this can all be simplified, probably need to rework how I set up the DB
+            dao.editUser(user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
             call.respond(OK, SimpleResponse(true, "You are now logged out!"))
         }
     }

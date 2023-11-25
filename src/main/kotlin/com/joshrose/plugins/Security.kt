@@ -2,13 +2,14 @@ package com.joshrose.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import io.ktor.server.response.*
 import kotlinx.serialization.Serializable
 
 fun Application.configureSecurity() {
-    // Please read the jwt property from the config file if you are using EngineMain
     val jwtAudience = environment.config.property("jwt.audience").getString()
     val jwtDomain = environment.config.property("jwt.issuer").getString()
     val jwtRealm = environment.config.property("jwt.realm").getString()
@@ -24,13 +25,20 @@ fun Application.configureSecurity() {
                     .build()
             )
             validate { credential ->
-                if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
+                with(credential.payload) {
+                    if (getClaim("email").asString() != "")
+                        JWTPrincipal(credential.payload)
+                    else null
+                }
+            }
+            challenge { _, _ ->
+                call.respond(Unauthorized, "Token is not valid or has expired")
             }
         }
     }
 
     authentication {
-        basic {
+        basic("old") {
             realm = "Chat Server"
             validate { credentials ->
                 val email = credentials.name.lowercase()
