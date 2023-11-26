@@ -9,9 +9,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.util.pipeline.*
 
-suspend fun PipelineContext<Unit, ApplicationCall>.receiverUsernames(): Pair<Username?, String> {
-    val principal = call.principal<JWTPrincipal>()
-    val username = principal!!.payload.getClaim("username").asString()
+suspend fun PipelineContext<Unit, ApplicationCall>.receiverUsernames(): Pair<Username?, Username> {
+    val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
 
     val request = try {
         call.receive<Username>()
