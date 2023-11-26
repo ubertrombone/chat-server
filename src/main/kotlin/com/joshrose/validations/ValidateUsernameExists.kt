@@ -8,6 +8,6 @@ import io.ktor.server.plugins.requestvalidation.ValidationResult.*
 
 fun RequestValidationConfig.validateUsernameExists() {
     validate<Username> { name ->
-        if (!dao.usernameExists(name.name)) Invalid(Constants.USERNAME_DOESNT_EXIST) else Valid
+        if (!dao.usernameExists(name)) Invalid(Constants.USERNAME_DOESNT_EXIST) else Valid
     }
 }
