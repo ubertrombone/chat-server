@@ -1,15 +1,20 @@
 package com.joshrose.routes
 
+import com.joshrose.Constants.FRIEND_ALREADY_ADDED
+import com.joshrose.Constants.FRIEND_REQUEST_DOESNT_EXIST
+import com.joshrose.Constants.FRIEND_REQUEST_EXISTS
+import com.joshrose.Constants.REQUEST_ALREADY_RECEIVED
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
 import com.joshrose.requests.CancelFriendRequestRequest
-import com.joshrose.requests.SendRequestRequest
 import com.joshrose.responses.SimpleResponse
-import com.joshrose.validations.validateCancelFriendRequest
-import com.joshrose.validations.validateSendRequest
+import com.joshrose.util.Username
+import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.HttpStatusCode.Companion.Conflict
 import io.ktor.http.HttpStatusCode.Companion.OK
+import io.ktor.http.HttpStatusCode.Companion.UnprocessableEntity
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -21,39 +26,43 @@ import io.ktor.server.routing.*
 fun Route.friendRequestRoute() {
     route("/friend_request") {
         install(RequestValidation) {
-            validateSendRequest()
-            validateCancelFriendRequest()
+            validateUsernameExists()
         }
 
         authenticate {
             get("/sent_friend_requests") {
-                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
-                val id = dao.loginUser(user)
-                val sentRequests = friendRequestDao.sentFriendRequests(id)
+                val user = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val sentRequests = friendRequestDao.sentFriendRequests(user)
                 if (sentRequests.isNotEmpty()) call.respond(OK, sentRequests)
                 else call.respond(OK, SimpleResponse(false, "No friend requests"))
             }
 
             get("/received_friend_requests") {
-                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
-                val id = dao.loginUser(user)
-                val receivedRequests = friendRequestDao.receivedFriendRequests(id)
+                val user = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val receivedRequests = friendRequestDao.receivedFriendRequests(user)
                 if (receivedRequests.isNotEmpty()) call.respond(OK, receivedRequests)
                 else call.respond(OK, SimpleResponse(false, "No friend requests"))
             }
 
             post {
-                val request = try {
-                    call.receive<SendRequestRequest>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(BadRequest)
-                    return@post
+                val (request, username) = receiverUsernames()
+                if (request == null) return@post
+
+                val friendList = dao.user(username)!!.friendList?.split(";")
+
+                when {
+                    friendRequestDao.friendRequestExists(username, request) ->
+                        call.respond(Conflict, FRIEND_REQUEST_EXISTS)
+                    friendRequestDao.friendRequestExists(request, username) ->
+                        call.respond(UnprocessableEntity, REQUEST_ALREADY_RECEIVED)
+                    else -> {
+                        if (friendList?.contains(request.name) == true) call.respond(Conflict, FRIEND_ALREADY_ADDED)
+                        else {
+                            friendRequestDao.addNewFriendRequest(requesterUsername = username, toUsername = request)
+                            call.respond(Accepted, "Request Sent!")
+                        }
+                    }
                 }
-
-                // TODO: this one is a mess, let's move most validation to route body.
-
-                friendRequestDao.addNewFriendRequest(requesterId = request.requesterId, toId = request.toId)
-                call.respond(Accepted, "Request Sent!")
             }
 
             post("/cancel_request") {
@@ -64,10 +73,8 @@ fun Route.friendRequestRoute() {
                     return@post
                 }
 
-                // TODO: ValidateCancelFriendRequest not needed, result of removeFriendRequest tells us the same thing
-
-                friendRequestDao.removeFriendRequest(request.id)
-                call.respond(OK, "Request cancelled!")
+                if (friendRequestDao.removeFriendRequest(request.id)) call.respond(OK, "Request cancelled!")
+                else call.respond(BadRequest, FRIEND_REQUEST_DOESNT_EXIST)
             }
         }
     }
