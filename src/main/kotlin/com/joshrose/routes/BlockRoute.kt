@@ -1,18 +1,17 @@
 package com.joshrose.routes
 
+import com.joshrose.Constants.USER_ALREADY_BLOCKED
+import com.joshrose.Constants.USER_NOT_BLOCKED
 import com.joshrose.plugins.dao
-import com.joshrose.requests.BlockUserRequest
-import com.joshrose.requests.UnblockUserRequest
-import com.joshrose.validations.validateBlockRequest
-import com.joshrose.validations.validateUnblockRequest
+import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
+import io.ktor.http.HttpStatusCode.Companion.Conflict
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import java.time.LocalDateTime
@@ -20,8 +19,7 @@ import java.time.LocalDateTime
 fun Route.blockRoute() {
     route("/block") {
         install(RequestValidation) {
-            validateBlockRequest()
-            validateUnblockRequest()
+            validateUsernameExists()
         }
 
         authenticate {
@@ -32,47 +30,42 @@ fun Route.blockRoute() {
             }
 
             post {
-                val request = try {
-                    call.receive<BlockUserRequest>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val (request, username) = receiverUsernames()
+                if (request == null) return@post
 
-                // TODO:
-                //  1. ValidateBlockRequest -- should only check if otherUser exists
-                //  2. In route body, check if otherUser is already in current User's block list
-
-                val user = dao.user(request.id)!!
+                val user = dao.user(username)!!
                 val blockedList = user.blockedList?.split(";")
-                dao.editUser(
-                    user = user.copy(
-                        lastOnline = LocalDateTime.now(),
-                        friendList = blockedList?.let { "$it;${request.otherUser}" } ?: request.otherUser
+                if (blockedList?.contains(request.name) == true) call.respond(Conflict, USER_ALREADY_BLOCKED)
+                else {
+                    dao.editUser(
+                        user = user.copy(
+                            lastOnline = LocalDateTime.now(),
+                            friendList = blockedList?.let { "$it;${request.name}" } ?: request.name
+                        )
                     )
-                )
-                call.respond(Accepted, "${request.otherUser} is blocked!")
+                    call.respond(Accepted, "${request.name} is blocked!")
+                }
             }
 
             post("/unblock") {
-                val request = try {
-                    call.receive<UnblockUserRequest>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(BadRequest)
-                    return@post
+                val (request, username) = receiverUsernames()
+                if (request == null) return@post
+
+                val user = dao.user(username)!!
+                val blockedList = user.blockedList?.split(";")
+                when {
+                    blockedList == null -> call.respond(BadRequest, USER_NOT_BLOCKED)
+                    !blockedList.contains(request.name) -> call.respond(BadRequest, USER_NOT_BLOCKED)
+                    else -> {
+                        dao.editUser(
+                            user = user.copy(
+                                lastOnline = LocalDateTime.now(),
+                                friendList = blockedList.minus(request.name).joinToString(";")
+                            )
+                        )
+                        call.respond(Accepted, "${request.name} is unblocked!")
+                    }
                 }
-
-                // TODO: Validate block isn't required; use logic here instead
-
-                val user = dao.user(request.id)!!
-                val blockedList = user.blockedList!!.split(";")
-                dao.editUser(
-                    user = user.copy(
-                        lastOnline = LocalDateTime.now(),
-                        friendList = blockedList.minus(request.otherUser).joinToString(";")
-                    )
-                )
-                call.respond(Accepted, "${request.otherUser} is unblocked!")
             }
         }
     }
