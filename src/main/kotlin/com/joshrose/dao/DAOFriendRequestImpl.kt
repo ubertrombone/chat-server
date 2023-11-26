@@ -16,13 +16,13 @@ class DAOFriendRequestImpl : DAOFriendRequest {
         FriendRequests.selectAll().map(::resultRowToFriendRequest)
     }
 
-    override suspend fun sentFriendRequests(requesterId: Int): List<FriendRequest> = dbQuery {
+    override suspend fun sentFriendRequests(requesterId: String): List<FriendRequest> = dbQuery {
         FriendRequests
             .select { FriendRequests.requesterId eq requesterId }
             .map(::resultRowToFriendRequest)
     }
 
-    override suspend fun receivedFriendRequests(toId: Int): List<FriendRequest> = dbQuery {
+    override suspend fun receivedFriendRequests(toId: String): List<FriendRequest> = dbQuery {
         FriendRequests
             .select { FriendRequests.toId eq toId }
             .map(::resultRowToFriendRequest)
@@ -35,13 +35,13 @@ class DAOFriendRequestImpl : DAOFriendRequest {
             .singleOrNull()
     }
 
-    override suspend fun friendRequestExists(requesterId: Int, toId: Int): Boolean = dbQuery {
+    override suspend fun friendRequestExists(requesterId: String, toId: String): Boolean = dbQuery {
         FriendRequests
             .select { FriendRequests.requesterId eq requesterId and (FriendRequests.toId eq toId) }
             .count().toInt() > 0
     }
 
-    override suspend fun addNewFriendRequest(requesterId: Int, toId: Int): FriendRequest? = dbQuery {
+    override suspend fun addNewFriendRequest(requesterId: String, toId: String): FriendRequest? = dbQuery {
         val insertStatement = FriendRequests.insert {
             it[FriendRequests.requesterId] = requesterId
             it[FriendRequests.toId] = toId

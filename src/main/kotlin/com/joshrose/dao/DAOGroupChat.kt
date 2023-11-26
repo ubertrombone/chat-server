@@ -9,7 +9,7 @@ interface DAOGroupChat {
     suspend fun groupChatNameExists(name: String): Boolean
     suspend fun addNewGroupChat(
         name: String,
-        creator: Int,
+        creator: String,
         createdDate: LocalDateTime,
         population: Int
     ): GroupChat?

@@ -32,7 +32,7 @@ class DAOGroupChatImpl : DAOGroupChat {
 
     override suspend fun addNewGroupChat(
         name: String,
-        creator: Int,
+        creator: String,
         createdDate: LocalDateTime,
         population: Int
     ): GroupChat? = dbQuery {

@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 
 class DAOUserImpl : DAOUser {
     private fun resultRowToUser(row: ResultRow) = User(
-        id = row[Users.id],
+        //id = row[Users.id],
         password = row[Users.password],
         username = row[Users.username],
         isOnline = row[Users.isOnline],
@@ -26,12 +26,12 @@ class DAOUserImpl : DAOUser {
         Users.selectAll().map(::resultRowToUser)
     }
 
-    override suspend fun user(id: Int): User? = dbQuery {
-        Users
-            .select { Users.id eq id }
-            .map(::resultRowToUser)
-            .singleOrNull()
-    }
+//    override suspend fun user(id: Int): User? = dbQuery {
+//        Users
+//            .select { Users.id eq id }
+//            .map(::resultRowToUser)
+//            .singleOrNull()
+//    }
 
     override suspend fun user(username: String): User? = dbQuery {
         Users
@@ -40,12 +40,14 @@ class DAOUserImpl : DAOUser {
             .singleOrNull()
     }
 
-    override suspend fun loginUser(username: String): Int = dbQuery {
+    // TODO: should probably remove now
+    override suspend fun loginUser(username: String): String = dbQuery {
         Users
             .select { Users.username eq username }
             .map(::resultRowToUser)
             .single()
-            .id
+            .username
+            //.id
     }
 
     override suspend fun addNewUser(
@@ -81,8 +83,11 @@ class DAOUserImpl : DAOUser {
         } > 0
     }
 
-    override suspend fun deleteUser(id: Int): Boolean = dbQuery {
-        Users.deleteWhere { Users.id eq id } > 0
+//    override suspend fun deleteUser(id: Int): Boolean = dbQuery {
+//        Users.deleteWhere { Users.id eq id } > 0
+//    }
+    override suspend fun deleteUser(username: String): Boolean = dbQuery {
+        Users.deleteWhere { Users.username eq username } > 0
     }
 
     override suspend fun usernameExists(username: String): Boolean = dbQuery {
