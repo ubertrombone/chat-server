@@ -1,6 +1,7 @@
 package com.joshrose.dao
 
 import com.joshrose.models.GroupChat
+import com.joshrose.util.Username
 import java.time.LocalDateTime
 
 interface DAOGroupChat {
@@ -9,7 +10,7 @@ interface DAOGroupChat {
     suspend fun groupChatNameExists(name: String): Boolean
     suspend fun addNewGroupChat(
         name: String,
-        creator: String,
+        creator: Username,
         createdDate: LocalDateTime,
         population: Int
     ): GroupChat?

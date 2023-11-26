@@ -7,6 +7,7 @@ import com.joshrose.models.User
 import com.joshrose.models.Users
 import com.joshrose.models.Users.username
 import com.joshrose.security.checkHashForPassword
+import com.joshrose.util.Username
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
@@ -33,17 +34,17 @@ class DAOUserImpl : DAOUser {
 //            .singleOrNull()
 //    }
 
-    override suspend fun user(username: String): User? = dbQuery {
+    override suspend fun user(username: Username): User? = dbQuery {
         Users
-            .select { Users.username eq username }
+            .select { Users.username eq username.name }
             .map(::resultRowToUser)
             .singleOrNull()
     }
 
     // TODO: should probably remove now
-    override suspend fun loginUser(username: String): String = dbQuery {
+    override suspend fun loginUser(username: Username): String = dbQuery {
         Users
-            .select { Users.username eq username }
+            .select { Users.username eq username.name }
             .map(::resultRowToUser)
             .single()
             .username
@@ -51,7 +52,7 @@ class DAOUserImpl : DAOUser {
     }
 
     override suspend fun addNewUser(
-        username: String,
+        username: Username,
         password: String,
         isOnline: Boolean,
         lastOnline: LocalDateTime,
@@ -60,7 +61,7 @@ class DAOUserImpl : DAOUser {
         status: String?
     ): User? = dbQuery {
         val insertStatement = Users.insert {
-            it[Users.username] = username
+            it[Users.username] = username.name
             it[Users.password] = password
             it[Users.isOnline] = isOnline
             it[Users.lastOnline] = lastOnline
@@ -86,17 +87,17 @@ class DAOUserImpl : DAOUser {
 //    override suspend fun deleteUser(id: Int): Boolean = dbQuery {
 //        Users.deleteWhere { Users.id eq id } > 0
 //    }
-    override suspend fun deleteUser(username: String): Boolean = dbQuery {
-        Users.deleteWhere { Users.username eq username } > 0
+    override suspend fun deleteUser(username: Username): Boolean = dbQuery {
+        Users.deleteWhere { Users.username eq username.name } > 0
     }
 
-    override suspend fun usernameExists(username: String): Boolean = dbQuery {
-        Users.select { Users.username eq username }.count().toInt() > 0
+    override suspend fun usernameExists(username: Username): Boolean = dbQuery {
+        Users.select { Users.username eq username.name }.count().toInt() > 0
     }
 
-    override suspend fun checkPassword(username: String, passwordToCheck: String): Boolean = dbQuery {
+    override suspend fun checkPassword(username: Username, passwordToCheck: String): Boolean = dbQuery {
         val actualPassword = Users
-            .select { Users.username eq username }
+            .select { Users.username eq username.name }
             .map(::resultRowToUser)
             .singleOrNull()?.password ?: return@dbQuery false
 

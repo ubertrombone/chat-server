@@ -3,6 +3,7 @@ package com.joshrose.dao
 import com.joshrose.dao.DatabaseFactory.dbQuery
 import com.joshrose.models.GroupChat
 import com.joshrose.models.GroupChats
+import com.joshrose.util.Username
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
@@ -32,13 +33,13 @@ class DAOGroupChatImpl : DAOGroupChat {
 
     override suspend fun addNewGroupChat(
         name: String,
-        creator: String,
+        creator: Username,
         createdDate: LocalDateTime,
         population: Int
     ): GroupChat? = dbQuery {
         val insertStatement = GroupChats.insert {
             it[GroupChats.name] = name
-            it[GroupChats.creator] = creator
+            it[GroupChats.creator] = creator.name
             it[GroupChats.createdDate] = createdDate
             it[GroupChats.population] = population
         }

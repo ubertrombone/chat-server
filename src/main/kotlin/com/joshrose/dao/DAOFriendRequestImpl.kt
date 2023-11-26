@@ -3,28 +3,29 @@ package com.joshrose.dao
 import com.joshrose.dao.DatabaseFactory.dbQuery
 import com.joshrose.models.FriendRequest
 import com.joshrose.models.FriendRequests
+import com.joshrose.util.Username
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DAOFriendRequestImpl : DAOFriendRequest {
     private fun resultRowToFriendRequest(row: ResultRow) = FriendRequest(
         id = row[FriendRequests.id],
-        requesterId = row[FriendRequests.requesterId],
-        toId = row[FriendRequests.toId]
+        requesterUsername = row[FriendRequests.requesterUsername],
+        toUsername = row[FriendRequests.toUsername]
     )
     override suspend fun allFriendRequests(): List<FriendRequest> = dbQuery {
         FriendRequests.selectAll().map(::resultRowToFriendRequest)
     }
 
-    override suspend fun sentFriendRequests(requesterId: String): List<FriendRequest> = dbQuery {
+    override suspend fun sentFriendRequests(requesterUsername: Username): List<FriendRequest> = dbQuery {
         FriendRequests
-            .select { FriendRequests.requesterId eq requesterId }
+            .select { FriendRequests.requesterUsername eq requesterUsername.name }
             .map(::resultRowToFriendRequest)
     }
 
-    override suspend fun receivedFriendRequests(toId: String): List<FriendRequest> = dbQuery {
+    override suspend fun receivedFriendRequests(toUsername: Username): List<FriendRequest> = dbQuery {
         FriendRequests
-            .select { FriendRequests.toId eq toId }
+            .select { FriendRequests.toUsername eq toUsername.name }
             .map(::resultRowToFriendRequest)
     }
 
@@ -35,24 +36,26 @@ class DAOFriendRequestImpl : DAOFriendRequest {
             .singleOrNull()
     }
 
-    override suspend fun friendRequestExists(requesterId: String, toId: String): Boolean = dbQuery {
+    override suspend fun friendRequestExists(requesterUsername: Username, toUsername: Username): Boolean = dbQuery {
         FriendRequests
-            .select { FriendRequests.requesterId eq requesterId and (FriendRequests.toId eq toId) }
+            .select {
+                FriendRequests.requesterUsername eq requesterUsername.name and (FriendRequests.toUsername eq toUsername.name)
+            }
             .count().toInt() > 0
     }
 
-    override suspend fun addNewFriendRequest(requesterId: String, toId: String): FriendRequest? = dbQuery {
+    override suspend fun addNewFriendRequest(requesterUsername: Username, toUsername: Username): FriendRequest? = dbQuery {
         val insertStatement = FriendRequests.insert {
-            it[FriendRequests.requesterId] = requesterId
-            it[FriendRequests.toId] = toId
+            it[FriendRequests.requesterUsername] = requesterUsername.name
+            it[FriendRequests.toUsername] = toUsername.name
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToFriendRequest)
     }
 
     override suspend fun editFriendRequest(friendRequest: FriendRequest): Boolean = dbQuery {
         FriendRequests.update({ FriendRequests.id eq friendRequest.id }) {
-            it[requesterId] = friendRequest.requesterId
-            it[toId] = friendRequest.toId
+            it[requesterUsername] = friendRequest.requesterUsername
+            it[toUsername] = friendRequest.toUsername
         } > 0
     }
 
