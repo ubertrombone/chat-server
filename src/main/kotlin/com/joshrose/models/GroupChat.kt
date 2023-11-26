@@ -7,7 +7,7 @@ import java.time.LocalDateTime
 data class GroupChat(
     val id: Int,
     val name: String,
-    val creator: Int,
+    val creator: String,
     val createdDate: LocalDateTime,
     val population: Int
 )
@@ -15,7 +15,7 @@ data class GroupChat(
 object GroupChats: Table() {
     val id = integer("id").autoIncrement()
     val name = varchar("name", 100)
-    val creator = integer("creator") references Users.id
+    val creator = varchar("creator", length = 24) references Users.username
     val createdDate = datetime("createdDate")
     val population = integer("population")
 

@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
 data class User(
-    val id: Int,
+    //val id: Int,
     val password: String,
     val username: String,
     val isOnline: Boolean,
@@ -16,7 +16,7 @@ data class User(
 )
 
 object Users: Table() {
-    val id = integer("id").autoIncrement()
+    //val id = integer("id").autoIncrement()
     val password = varchar("password", 500)
     val username = varchar("username", 24)
     val isOnline = bool("isOnline")
@@ -25,5 +25,5 @@ object Users: Table() {
     val blockedList = varchar("blockedList", 50000).nullable()
     val status = varchar("status", 256).nullable()
 
-    override val primaryKey = PrimaryKey(id)
+    override val primaryKey = PrimaryKey(username)
 }
