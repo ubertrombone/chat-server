@@ -1,3 +1,3 @@
 package com.joshrose.requests
 
-data class StatusRequest(val id: Int, val status: String?)
+data class StatusRequest(val status: String?)
