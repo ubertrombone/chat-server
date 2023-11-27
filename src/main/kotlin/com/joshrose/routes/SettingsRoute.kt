@@ -1,19 +1,18 @@
 package com.joshrose.routes
 
 import com.joshrose.plugins.dao
-import com.joshrose.requests.RemoveUserRequest
 import com.joshrose.requests.UpdatePasswordRequest
 import com.joshrose.requests.UpdateUsernameRequest
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.security.getHashWithSalt
-import com.joshrose.validations.validatePasswordUpdate
-import com.joshrose.validations.validateUsernameUpdate
+import com.joshrose.util.Username
+import com.joshrose.util.validateUpdateNewUsername
+import com.joshrose.util.validateUpdatePassword
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -21,11 +20,6 @@ import java.time.LocalDateTime
 
 fun Route.settingsRoute() {
     route("/settings") {
-        install(RequestValidation) {
-            validateUsernameUpdate()
-            validatePasswordUpdate()
-        }
-
         authenticate {
             get {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
@@ -40,18 +34,11 @@ fun Route.settingsRoute() {
                     return@post
                 }
 
-                // TODO:
-                //  1. ValidatePasswordUpdate isn't needed -- change it to a function that returns a reason or null
-                //  2. if new fun returns null, editUser else return reason
-
-                val user = dao.user(request.id)!!
-                dao.editUser(
-                    user = user.copy(
-                        password = getHashWithSalt(request.newPassword),
-                        lastOnline = LocalDateTime.now()
-                    )
-                )
-                call.respond(OK, SimpleResponse(true, "Password reset successfully!"))
+                val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val user = dao.user(username)!!
+                validateUpdatePassword(username, request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
+                    user = user.copy(password = getHashWithSalt(request.newPassword), lastOnline = LocalDateTime.now())
+                ).also { call.respond(OK, SimpleResponse(true, "Password reset successfully!")) }
             }
 
             post("/updateuser") {
@@ -62,30 +49,29 @@ fun Route.settingsRoute() {
                     return@post
                 }
 
-                // TODO: Remove ID
-
-                val user = dao.user(request.id)!!
-                dao.editUser(
+                val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val user = dao.user(username)!!
+                validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
                     user = user.copy(
-                        username = request.newUsername,
+                        username = request.newUsername.name,
                         lastOnline = LocalDateTime.now()
                     )
-                )
-                call.respond(OK, SimpleResponse(true, "Username changed: ${request.newUsername}"))
+                ).also { call.respond(OK, SimpleResponse(true, "Username changed: ${request.newUsername}")) }
             }
 
             post("/delete") {
                 val request = try {
-                    call.receive<RemoveUserRequest>()
+                    call.receive<Boolean>()
                 } catch (e: ContentTransformationException) {
                     call.respond(BadRequest)
                     return@post
                 }
 
-                // TODO: Remove ID
-
-                if (request.delete) dao.deleteUser(request.id)
-                call.respond(OK, SimpleResponse(true, "Account Deleted!"))
+                val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                if (request) {
+                    dao.deleteUser(username)
+                    call.respond(OK, SimpleResponse(true, "Account Deleted!"))
+                } else call.respond(BadRequest, "Request to delete account should not be 'false'.")
             }
         }
     }

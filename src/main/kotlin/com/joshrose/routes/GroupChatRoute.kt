@@ -1,9 +1,9 @@
 package com.joshrose.routes
 
-import com.joshrose.plugins.dao
 import com.joshrose.plugins.groupChatDao
 import com.joshrose.requests.GroupChatNameRequest
 import com.joshrose.responses.SimpleResponse
+import com.joshrose.util.Username
 import com.joshrose.validations.validateGroupChat
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -38,11 +38,10 @@ fun Route.groupChatRoute() {
                     return@post
                 }
 
-                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString()
-                val id = dao.loginUser(user)
+                val user = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
                 groupChatDao.addNewGroupChat(
                     name = request.name,
-                    creator = id,
+                    creator = user,
                     createdDate = LocalDateTime.now(),
                     population = 0
                 )

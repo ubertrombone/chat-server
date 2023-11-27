@@ -39,6 +39,7 @@ fun Route.registerRoute() {
                 blockedList = null,
                 status = null
             )?.let {
+                // TODO: Create JWT token here to be shared with client? Response would be token plus OK?
                 call.respond(OK, SimpleResponse(true, "Successfully created account!"))
             } ?: call.respond(OK, SimpleResponse(false, "An unknown error occurred"))
         }

@@ -45,7 +45,7 @@ fun Route.friendRequestRoute() {
             }
 
             post {
-                val (request, username) = receiverUsernames()
+                val (request, username) = receiveUsernames()
                 if (request == null) return@post
 
                 val friendList = dao.user(username)!!.friendList?.split(";")

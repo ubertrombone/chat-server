@@ -31,40 +31,40 @@ fun Route.blockRoute() {
             }
 
             post {
-                val (request, username) = receiverUsernames()
-                if (request == null) return@post
+                val (otherUser, username) = receiveUsernames()
+                if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
                 val blockedList = user.blockedList?.split(";")
-                if (blockedList?.contains(request.name) == true) call.respond(Conflict, USER_ALREADY_BLOCKED)
+                if (blockedList?.contains(otherUser.name) == true) call.respond(Conflict, USER_ALREADY_BLOCKED)
                 else {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = LocalDateTime.now(),
-                            friendList = blockedList?.let { "$it;${request.name}" } ?: request.name
+                            friendList = blockedList?.let { "$it;${otherUser.name}" } ?: otherUser.name
                         )
                     )
-                    call.respond(Accepted, "${request.name} is blocked!")
+                    call.respond(Accepted, "${otherUser.name} is blocked!")
                 }
             }
 
             post("/unblock") {
-                val (request, username) = receiverUsernames()
-                if (request == null) return@post
+                val (otherUser, username) = receiveUsernames()
+                if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
                 val blockedList = user.blockedList?.split(";")
                 when {
                     blockedList == null -> call.respond(BadRequest, USER_NOT_BLOCKED)
-                    !blockedList.contains(request.name) -> call.respond(BadRequest, USER_NOT_BLOCKED)
+                    !blockedList.contains(otherUser.name) -> call.respond(BadRequest, USER_NOT_BLOCKED)
                     else -> {
                         dao.editUser(
                             user = user.copy(
                                 lastOnline = LocalDateTime.now(),
-                                friendList = blockedList.minus(request.name).joinToString(";")
+                                friendList = blockedList.minus(otherUser.name).joinToString(";")
                             )
                         )
-                        call.respond(Accepted, "${request.name} is unblocked!")
+                        call.respond(Accepted, "${otherUser.name} is unblocked!")
                     }
                 }
             }

@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.plugins.dao
 import com.joshrose.requests.LoginRequest
 import com.joshrose.responses.SimpleResponse
+import com.joshrose.util.Username
 import com.joshrose.validations.validateLogin
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -34,7 +35,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
 
             val token = JWT.create().apply {
                 withIssuer(issuer)
-                withClaim("username", user.username)
+                withClaim("username", user.username.name)
                 withExpiresAt(Date(System.currentTimeMillis() + 600000))
             }.sign(Algorithm.HMAC256(secret))
             call.respond(hashMapOf("token" to token))
@@ -43,11 +44,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
 
     authenticate {
         post("/logout") {
-            val principal = call.principal<JWTPrincipal>()
-            val username = principal!!.payload.getClaim("username").asString()
-            val expiresAt = principal.expiresAt?.time?.minus(System.currentTimeMillis())
-            println("EXPIRES AT: $expiresAt")
-
+            val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
             val user = dao.user(username)!!
             dao.editUser(user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
             call.respond(OK, SimpleResponse(true, "You are now logged out!"))
