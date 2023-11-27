@@ -36,7 +36,7 @@ class DAOUserImpl : DAOUser {
 
     override suspend fun user(username: Username): User? = dbQuery {
         Users
-            .select { Users.username eq username.name }
+            .select { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()
     }
@@ -44,7 +44,7 @@ class DAOUserImpl : DAOUser {
     // TODO: should probably remove now
     override suspend fun loginUser(username: Username): String = dbQuery {
         Users
-            .select { Users.username eq username.name }
+            .select { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .single()
             .username
@@ -88,16 +88,16 @@ class DAOUserImpl : DAOUser {
 //        Users.deleteWhere { Users.id eq id } > 0
 //    }
     override suspend fun deleteUser(username: Username): Boolean = dbQuery {
-        Users.deleteWhere { Users.username eq username.name } > 0
+        Users.deleteWhere { Users.username.lowerCase() eq username.name.lowercase() } > 0
     }
 
     override suspend fun usernameExists(username: Username): Boolean = dbQuery {
-        Users.select { Users.username eq username.name }.count().toInt() > 0
+        Users.select { Users.username.lowerCase() eq username.name.lowercase() }.count().toInt() > 0
     }
 
     override suspend fun checkPassword(username: Username, passwordToCheck: String): Boolean = dbQuery {
         val actualPassword = Users
-            .select { Users.username eq username.name }
+            .select { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()?.password ?: return@dbQuery false
 

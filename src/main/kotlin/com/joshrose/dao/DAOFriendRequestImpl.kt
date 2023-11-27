@@ -19,13 +19,13 @@ class DAOFriendRequestImpl : DAOFriendRequest {
 
     override suspend fun sentFriendRequests(requesterUsername: Username): List<FriendRequest> = dbQuery {
         FriendRequests
-            .select { FriendRequests.requesterUsername eq requesterUsername.name }
+            .select { FriendRequests.requesterUsername.lowerCase() eq requesterUsername.name.lowercase() }
             .map(::resultRowToFriendRequest)
     }
 
     override suspend fun receivedFriendRequests(toUsername: Username): List<FriendRequest> = dbQuery {
         FriendRequests
-            .select { FriendRequests.toUsername eq toUsername.name }
+            .select { FriendRequests.toUsername.lowerCase() eq toUsername.name.lowercase() }
             .map(::resultRowToFriendRequest)
     }
 

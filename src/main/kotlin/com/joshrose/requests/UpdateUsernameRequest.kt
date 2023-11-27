@@ -1,6 +1,7 @@
 package com.joshrose.requests
 
+import com.joshrose.util.Username
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UpdateUsernameRequest(val id: Int, val newUsername: String)
+data class UpdateUsernameRequest(val newUsername: Username)

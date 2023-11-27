@@ -13,9 +13,9 @@ import io.ktor.server.plugins.requestvalidation.ValidationResult.*
 fun RequestValidationConfig.validateUsername() {
     validate<AccountRequest> { account ->
         when {
-            account.username.isBlank() -> Invalid(USERNAME_TOO_SHORT)
-            account.username.length > REQUIREMENT_MAX -> Invalid(USERNAME_TOO_LONG)
-            account.username.any { !it.isLetterOrDigit() } -> Invalid(INVALID_CHARS_USERNAME)
+            account.username.name.isBlank() -> Invalid(USERNAME_TOO_SHORT)
+            account.username.name.length > REQUIREMENT_MAX -> Invalid(USERNAME_TOO_LONG)
+            account.username.name.any { !it.isLetterOrDigit() } -> Invalid(INVALID_CHARS_USERNAME)
             dao.usernameExists(account.username) -> Invalid(USERNAME_EXISTS)
             else -> Valid
         }
