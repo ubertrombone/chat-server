@@ -9,7 +9,7 @@ object Constants {
     const val PASSWORD_LONG = "Password must be no more than $REQUIREMENT_MAX characters!"
     const val PASSWORDS_DONT_MATCH = "Passwords don't match"
     const val PASSWORD_MUST_BE_NEW = "New password cannot be the same as old password"
-    const val PASSWORD_REQUIRED_CHARS = "Password must contain at least 1 letter and 1 number"
+    const val PASSWORD_REQUIRED_CHARS = "Password must contain at least 1 letter and 1 number."
     const val INVALID_CHARS_PASSWORD = "Invalid characters!"
     const val USERNAME_EXISTS = "Username already exists!"
     const val USERNAME_DOESNT_EXIST = "Username doesn't exist!"
