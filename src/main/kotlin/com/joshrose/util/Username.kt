@@ -10,6 +10,6 @@ import kotlinx.serialization.Serializable
 value class Username(val name: String) {
     init {
         require(name.isNotEmpty()) { USERNAME_TOO_SHORT }
-        require(name.length <= REQUIREMENT_MAX) { "$USERNAME_TOO_LONG name: ${name.length}" }
+        require(name.length <= REQUIREMENT_MAX) { "$USERNAME_TOO_LONG Length is: ${name.length}" }
     }
 }
