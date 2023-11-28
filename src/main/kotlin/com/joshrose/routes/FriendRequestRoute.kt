@@ -8,7 +8,7 @@ import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
 import com.joshrose.requests.CancelFriendRequestRequest
 import com.joshrose.responses.SimpleResponse
-import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -31,14 +31,14 @@ fun Route.friendRequestRoute() {
 
         authenticate {
             get("/sent_friend_requests") {
-                val user = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val sentRequests = friendRequestDao.sentFriendRequests(user)
                 if (sentRequests.isNotEmpty()) call.respond(OK, sentRequests)
                 else call.respond(OK, SimpleResponse(false, "No friend requests"))
             }
 
             get("/received_friend_requests") {
-                val user = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val receivedRequests = friendRequestDao.receivedFriendRequests(user)
                 if (receivedRequests.isNotEmpty()) call.respond(OK, receivedRequests)
                 else call.respond(OK, SimpleResponse(false, "No friend requests"))

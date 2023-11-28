@@ -5,7 +5,7 @@ import com.joshrose.requests.UpdatePasswordRequest
 import com.joshrose.requests.UpdateUsernameRequest
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.security.getHashWithSalt
-import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import com.joshrose.util.validateUpdateNewUsername
 import com.joshrose.util.validateUpdatePassword
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -34,7 +34,7 @@ fun Route.settingsRoute() {
                     return@post
                 }
 
-                val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
                 validateUpdatePassword(username, request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
                     user = user.copy(password = getHashWithSalt(request.newPassword), lastOnline = LocalDateTime.now())
@@ -49,7 +49,7 @@ fun Route.settingsRoute() {
                     return@post
                 }
 
-                val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
                 validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
                     user = user.copy(
@@ -67,7 +67,7 @@ fun Route.settingsRoute() {
                     return@post
                 }
 
-                val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 if (request) {
                     dao.deleteUser(username)
                     call.respond(OK, SimpleResponse(true, "Account Deleted!"))

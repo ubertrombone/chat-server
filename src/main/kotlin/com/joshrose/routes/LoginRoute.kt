@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.plugins.dao
 import com.joshrose.requests.LoginRequest
 import com.joshrose.responses.SimpleResponse
-import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import com.joshrose.validations.validateLogin
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -44,7 +44,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
 
     authenticate {
         post("/logout") {
-            val username = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+            val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
             val user = dao.user(username)!!
             dao.editUser(user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
             call.respond(OK, SimpleResponse(true, "You are now logged out!"))

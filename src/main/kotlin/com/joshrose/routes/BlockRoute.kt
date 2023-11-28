@@ -3,7 +3,7 @@ package com.joshrose.routes
 import com.joshrose.Constants.USER_ALREADY_BLOCKED
 import com.joshrose.Constants.USER_NOT_BLOCKED
 import com.joshrose.plugins.dao
-import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -25,7 +25,7 @@ fun Route.blockRoute() {
 
         authenticate {
             get {
-                val user = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val blockList = dao.user(user)!!.blockedList
                 call.respond(OK, blockList ?: "")
             }

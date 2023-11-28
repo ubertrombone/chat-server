@@ -3,7 +3,7 @@ package com.joshrose.routes
 import com.joshrose.Constants.FRIEND_ALREADY_ADDED
 import com.joshrose.Constants.FRIEND_DOESNT_EXIST
 import com.joshrose.plugins.dao
-import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -26,7 +26,7 @@ fun Route.friendsRoute() {
 
         authenticate {
             get {
-                val user = Username(call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString())
+                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val friendList = dao.user(user)!!.friendList
                 call.respond(OK, friendList ?: "")
             }
