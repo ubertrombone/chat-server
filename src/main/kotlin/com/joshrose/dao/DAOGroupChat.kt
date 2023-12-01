@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 
 interface DAOGroupChat {
     suspend fun allGroupChats(): List<GroupChat>
-    suspend fun groupChat(id: Int): GroupChat?
+    suspend fun groupChat(name: String): GroupChat?
     suspend fun groupChatNameExists(name: String): Boolean
     suspend fun addNewGroupChat(
         name: String,
@@ -15,5 +15,5 @@ interface DAOGroupChat {
         members: String?
     ): GroupChat?
     suspend fun editGroupChat(groupChat: GroupChat): Boolean
-    suspend fun deleteGroupChat(id: Int): Boolean
+    suspend fun deleteGroupChat(name: String): Boolean
 }

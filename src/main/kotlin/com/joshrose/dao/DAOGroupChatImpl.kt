@@ -10,7 +10,6 @@ import java.time.LocalDateTime
 
 class DAOGroupChatImpl : DAOGroupChat {
     private fun resultRowToChatGroup(row: ResultRow) = GroupChat(
-        id = row[GroupChats.id],
         name = row[GroupChats.name],
         creator = row[GroupChats.creator],
         createdDate = row[GroupChats.createdDate],
@@ -20,9 +19,9 @@ class DAOGroupChatImpl : DAOGroupChat {
         GroupChats.selectAll().map(::resultRowToChatGroup)
     }
 
-    override suspend fun groupChat(id: Int): GroupChat? = dbQuery {
+    override suspend fun groupChat(name: String): GroupChat? = dbQuery {
         GroupChats
-            .select { GroupChats.id eq id }
+            .select { GroupChats.name eq name }
             .map(::resultRowToChatGroup)
             .singleOrNull()
     }
@@ -47,7 +46,7 @@ class DAOGroupChatImpl : DAOGroupChat {
     }
 
     override suspend fun editGroupChat(groupChat: GroupChat): Boolean = dbQuery {
-        GroupChats.update({ GroupChats.id eq groupChat.id }) {
+        GroupChats.update({ GroupChats.name eq groupChat.name }) {
             it[name] = groupChat.name
             it[creator] = groupChat.creator
             it[createdDate] = groupChat.createdDate
@@ -55,7 +54,7 @@ class DAOGroupChatImpl : DAOGroupChat {
         } > 0
     }
 
-    override suspend fun deleteGroupChat(id: Int): Boolean = dbQuery {
-        GroupChats.deleteWhere { GroupChats.id eq id } > 0
+    override suspend fun deleteGroupChat(name: String): Boolean = dbQuery {
+        GroupChats.deleteWhere { GroupChats.name eq name } > 0
     }
 }
