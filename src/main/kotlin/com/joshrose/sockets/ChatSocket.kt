@@ -3,6 +3,7 @@ package com.joshrose.sockets
 import com.joshrose.Connection
 import com.joshrose.chat_model.ChatMessage
 import com.joshrose.chat_model.Functions
+import com.joshrose.plugins.groupChatDao
 import com.joshrose.util.toUsername
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -23,7 +24,7 @@ fun Route.chatSocket() {
             val thisConnection = establishConnection(userPrincipal, server)
 
             try {
-                handleIncomingFrames(server)
+                handleIncomingFrames(server, thisConnection)
             } finally {
                 server.removeConnection(thisConnection)
             }
@@ -38,16 +39,21 @@ suspend fun DefaultWebSocketSession.establishConnection(principal: JWTPrincipal,
     return connection
 }
 
-suspend fun DefaultWebSocketSession.handleIncomingFrames(server: ChatServer) =
+suspend fun DefaultWebSocketSession.handleIncomingFrames(server: ChatServer, connection: Connection) =
     incoming.consumeEach { frame ->
         if (frame is Frame.Text) {
             val message = Json.decodeFromString<ChatMessage>(frame.readText())
-            delegateMessageProcessing(message, server)
+            val response = delegateMessageProcessing(message, server, connection)
+            if (!response.successful) connection.session.send("An error occurred: ${response.message}")
         }
     }
 
-suspend fun delegateMessageProcessing(message: ChatMessage, server: ChatServer) =
+suspend fun delegateMessageProcessing(message: ChatMessage, server: ChatServer, connection: Connection) =
     when (message.function) {
         Functions.GROUP -> server.messageGroup(message)
         Functions.INDIVIDUAL -> server.sendTo(message)
+        Functions.LEAVE -> {
+            val group = groupChatDao.groupChat(message.recipientOrGroup)
+            server.leaveGroup(group, connection)
+        }
     }

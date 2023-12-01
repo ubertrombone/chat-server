@@ -2,7 +2,7 @@ package com.joshrose.sockets
 
 import com.joshrose.Connection
 import com.joshrose.chat_model.ChatMessage
-import com.joshrose.chat_model.Functions.GROUP
+import com.joshrose.models.GroupChat
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.groupChatDao
 import com.joshrose.responses.SimpleResponse
@@ -22,33 +22,33 @@ class ChatServer {
         val user = dao.user(connection.name)!!
         dao.editUser(user = user.copy(isOnline = true))
     }
+
     suspend fun removeConnection(connection: Connection) {
         connections -= connection
 
         val user = dao.user(connection.name)!!
-        dao.editUser(
-            user = user.copy(
-                isOnline = false,
-                lastOnline = LocalDateTime.now()
-            )
-        )
+        dao.editUser(user = user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
 
-        groupChatDao.allGroupChats().filter { it.members.contains(connection.name) }.forEach { group ->
+        groupChatDao.allGroupChats()
+            .filter { groupChat -> groupChat.members.contains(connection.name) }
+            .forEach { groupChat -> leaveGroup(groupChat, connection) }
+    }
+
+    suspend fun leaveGroup(groupChat: GroupChat?, connection: Connection): SimpleResponse =
+        groupChat?.let { group ->
             with(group.members.minus(connection.name)) {
                 if (isEmpty()) groupChatDao.deleteGroupChat(group.name)
-                else groupChatDao.editGroupChat(groupChat = group.copy(members = this))
+                else {
+                    groupChatDao.editGroupChat(groupChat = group.copy(members = this))
+                    connections
+                        .filter { contains(it.name) }
+                        .forEach { it.session.send(Json.encodeToString("${connection.name} has left")) }
+                }
+                SimpleResponse(true, "${connection.name} removed from ${group.name}")
             }
+        } ?: SimpleResponse(false, "Group not found")
 
-            messageGroup(
-                ChatMessage(
-                    function = GROUP,
-                    sender = connection.name,
-                    recipientOrGroup = group.name,
-                    message = "${connection.name} has left"
-                )
-            )
-        }
-    }
+
     suspend fun sendTo(message: ChatMessage): SimpleResponse =
         dao.user(message.recipientOrGroup.toUsername())?.let { username ->
             if (username.isOnline) handleOnlineUser(message)
