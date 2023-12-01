@@ -14,7 +14,7 @@ class DAOGroupChatImpl : DAOGroupChat {
         name = row[GroupChats.name],
         creator = row[GroupChats.creator],
         createdDate = row[GroupChats.createdDate],
-        population = row[GroupChats.population],
+        members = row[GroupChats.members],
     )
     override suspend fun allGroupChats(): List<GroupChat> = dbQuery {
         GroupChats.selectAll().map(::resultRowToChatGroup)
@@ -35,13 +35,13 @@ class DAOGroupChatImpl : DAOGroupChat {
         name: String,
         creator: Username,
         createdDate: LocalDateTime,
-        population: Int
+        members: String?
     ): GroupChat? = dbQuery {
         val insertStatement = GroupChats.insert {
             it[GroupChats.name] = name
             it[GroupChats.creator] = creator.name
             it[GroupChats.createdDate] = createdDate
-            it[GroupChats.population] = population
+            it[GroupChats.members] = members
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToChatGroup)
     }
@@ -51,7 +51,7 @@ class DAOGroupChatImpl : DAOGroupChat {
             it[name] = groupChat.name
             it[creator] = groupChat.creator
             it[createdDate] = groupChat.createdDate
-            it[population] = groupChat.population
+            it[members] = groupChat.members
         } > 0
     }
 

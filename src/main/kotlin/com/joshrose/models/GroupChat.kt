@@ -9,7 +9,7 @@ data class GroupChat(
     val name: String,
     val creator: String,
     val createdDate: LocalDateTime,
-    val population: Int
+    val members: String?
 )
 
 object GroupChats: Table() {
@@ -17,7 +17,7 @@ object GroupChats: Table() {
     val name = varchar("name", 100)
     val creator = varchar("creator", length = 24) references Users.username
     val createdDate = datetime("createdDate")
-    val population = integer("population")
+    val members = varchar("members", 50000).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

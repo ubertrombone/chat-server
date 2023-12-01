@@ -12,7 +12,7 @@ interface DAOGroupChat {
         name: String,
         creator: Username,
         createdDate: LocalDateTime,
-        population: Int
+        members: String?
     ): GroupChat?
     suspend fun editGroupChat(groupChat: GroupChat): Boolean
     suspend fun deleteGroupChat(id: Int): Boolean
