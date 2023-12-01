@@ -21,7 +21,7 @@ object Users: Table() {
     val username = varchar("username", 24)
     val isOnline = bool("isOnline")
     val lastOnline = datetime("lastOnline")
-    val friendList = varchar("friendList", 5000).nullable()
+    val friendList = varchar("friendList", 50000).nullable()
     val blockedList = varchar("blockedList", 50000).nullable()
     val status = varchar("status", 256).nullable()
 
