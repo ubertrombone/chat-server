@@ -27,7 +27,7 @@ fun Route.blockRoute() {
             get {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val blockList = dao.user(user)!!.blockedList
-                call.respond(OK, blockList ?: "")
+                call.respond(OK, blockList)
             }
 
             post {
