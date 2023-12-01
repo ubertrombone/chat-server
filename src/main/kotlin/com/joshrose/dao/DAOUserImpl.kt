@@ -19,20 +19,13 @@ class DAOUserImpl : DAOUser {
         username = row[Users.username],
         isOnline = row[Users.isOnline],
         lastOnline = row[Users.lastOnline],
-        friendList = row[Users.friendList],
-        blockedList = row[Users.blockedList],
+        friendList = row[Users.friendList].split(";").toSet(),
+        blockedList = row[Users.blockedList].split(";").toSet(),
         status = row[Users.status]
     )
     override suspend fun allUsers(): List<User> = dbQuery {
         Users.selectAll().map(::resultRowToUser)
     }
-
-//    override suspend fun user(id: Int): User? = dbQuery {
-//        Users
-//            .select { Users.id eq id }
-//            .map(::resultRowToUser)
-//            .singleOrNull()
-//    }
 
     override suspend fun user(username: Username): User? = dbQuery {
         Users
@@ -48,7 +41,6 @@ class DAOUserImpl : DAOUser {
             .map(::resultRowToUser)
             .single()
             .username
-            //.id
     }
 
     override suspend fun addNewUser(
@@ -56,8 +48,8 @@ class DAOUserImpl : DAOUser {
         password: String,
         isOnline: Boolean,
         lastOnline: LocalDateTime,
-        friendList: String?,
-        blockedList: String?,
+        friendList: Set<String>,
+        blockedList: Set<String>,
         status: String?
     ): User? = dbQuery {
         val insertStatement = Users.insert {
@@ -65,8 +57,8 @@ class DAOUserImpl : DAOUser {
             it[Users.password] = password
             it[Users.isOnline] = isOnline
             it[Users.lastOnline] = lastOnline
-            it[Users.friendList] = friendList
-            it[Users.blockedList] = blockedList
+            it[Users.friendList] = friendList.joinToString(";")
+            it[Users.blockedList] = blockedList.joinToString(";")
             it[Users.status] = status
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToUser)
@@ -78,15 +70,12 @@ class DAOUserImpl : DAOUser {
             it[password] = user.password
             it[isOnline] = user.isOnline
             it[lastOnline] = user.lastOnline
-            it[friendList] = user.friendList
-            it[blockedList] = user.blockedList
+            it[friendList] = user.friendList.joinToString(";")
+            it[blockedList] = user.blockedList.joinToString(";")
             it[status] = user.status
         } > 0
     }
 
-//    override suspend fun deleteUser(id: Int): Boolean = dbQuery {
-//        Users.deleteWhere { Users.id eq id } > 0
-//    }
     override suspend fun deleteUser(username: Username): Boolean = dbQuery {
         Users.deleteWhere { Users.username.lowerCase() eq username.name.lowercase() } > 0
     }

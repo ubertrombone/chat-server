@@ -35,13 +35,13 @@ fun Route.blockRoute() {
                 if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
-                val blockedList = user.blockedList?.split(";")
-                if (blockedList?.contains(otherUser.name) == true) call.respond(Conflict, USER_ALREADY_BLOCKED)
+                val blockedList = user.blockedList
+                if (blockedList.contains(otherUser.name)) call.respond(Conflict, USER_ALREADY_BLOCKED)
                 else {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = LocalDateTime.now(),
-                            friendList = blockedList?.let { "$it;${otherUser.name}" } ?: otherUser.name
+                            friendList = blockedList.plus(otherUser.name)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} is blocked!")
@@ -53,19 +53,16 @@ fun Route.blockRoute() {
                 if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
-                val blockedList = user.blockedList?.split(";")
-                when {
-                    blockedList == null -> call.respond(BadRequest, USER_NOT_BLOCKED)
-                    !blockedList.contains(otherUser.name) -> call.respond(BadRequest, USER_NOT_BLOCKED)
-                    else -> {
-                        dao.editUser(
-                            user = user.copy(
-                                lastOnline = LocalDateTime.now(),
-                                friendList = blockedList.minus(otherUser.name).joinToString(";")
-                            )
+                val blockedList = user.blockedList
+                if (!blockedList.contains(otherUser.name)) call.respond(BadRequest, USER_NOT_BLOCKED)
+                else {
+                    dao.editUser(
+                        user = user.copy(
+                            lastOnline = LocalDateTime.now(),
+                            friendList = blockedList.minus(otherUser.name)
                         )
-                        call.respond(Accepted, "${otherUser.name} is unblocked!")
-                    }
+                    )
+                    call.respond(Accepted, "${otherUser.name} is unblocked!")
                 }
             }
         }

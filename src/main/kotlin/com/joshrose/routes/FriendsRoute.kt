@@ -28,7 +28,7 @@ fun Route.friendsRoute() {
             get {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val friendList = dao.user(user)!!.friendList
-                call.respond(OK, friendList ?: "")
+                call.respond(OK, friendList)
             }
 
             post("/add") {
@@ -36,14 +36,13 @@ fun Route.friendsRoute() {
                 if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
-                val friendList = user.friendList?.split(";") ?: emptyList()
+                val friendList = user.friendList
                 if (friendList.contains(otherUser.name)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
                 else {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = LocalDateTime.now(),
-                            friendList = if (friendList.isEmpty()) otherUser.name
-                                else "${user.friendList};${otherUser.name}"
+                            friendList = friendList.plus(otherUser.name)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} added!")
@@ -55,19 +54,16 @@ fun Route.friendsRoute() {
                 if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
-                val friendList = user.friendList?.split(";")
-                when {
-                    friendList == null -> call.respond(BadRequest, FRIEND_DOESNT_EXIST)
-                    !friendList.contains(otherUser.name) -> call.respond(BadRequest, FRIEND_DOESNT_EXIST)
-                    else -> {
-                        dao.editUser(
-                            user = user.copy(
-                                lastOnline = LocalDateTime.now(),
-                                friendList = friendList.minus(otherUser.name).joinToString(";")
-                            )
+                val friendList = user.friendList
+                if (!friendList.contains(otherUser.name)) call.respond(BadRequest, FRIEND_DOESNT_EXIST)
+                else {
+                    dao.editUser(
+                        user = user.copy(
+                            lastOnline = LocalDateTime.now(),
+                            friendList = friendList.minus(otherUser.name)
                         )
-                        call.respond(Accepted, "${otherUser.name} removed!")
-                    }
+                    )
+                    call.respond(Accepted, "${otherUser.name} removed!")
                 }
             }
         }

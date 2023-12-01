@@ -19,8 +19,8 @@ val dao: DAOUser = DAOUserImpl().apply {
                 password = getHashWithSalt("p@ssw0rd"),
                 isOnline = true,
                 lastOnline = LocalDateTime.now(),
-                friendList = null,
-                blockedList = null,
+                friendList = emptySet(),
+                blockedList = emptySet(),
                 status = null
             )
         }

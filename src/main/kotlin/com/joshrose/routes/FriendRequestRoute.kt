@@ -48,7 +48,7 @@ fun Route.friendRequestRoute() {
                 val (request, username) = receiveUsernames()
                 if (request == null) return@post
 
-                val friendList = dao.user(username)!!.friendList?.split(";")
+                val friendList = dao.user(username)!!.friendList
 
                 when {
                     friendRequestDao.friendRequestExists(username, request) ->
@@ -56,7 +56,7 @@ fun Route.friendRequestRoute() {
                     friendRequestDao.friendRequestExists(request, username) ->
                         call.respond(UnprocessableEntity, REQUEST_ALREADY_RECEIVED)
                     else -> {
-                        if (friendList?.contains(request.name) == true) call.respond(Conflict, FRIEND_ALREADY_ADDED)
+                        if (friendList.contains(request.name)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
                         else {
                             friendRequestDao.addNewFriendRequest(requesterUsername = username, toUsername = request)
                             call.respond(Accepted, "Request Sent!")

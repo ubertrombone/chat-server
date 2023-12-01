@@ -35,8 +35,8 @@ fun Route.registerRoute() {
                 password = getHashWithSalt(request.password),
                 isOnline = true,
                 lastOnline = LocalDateTime.now(),
-                friendList = null,
-                blockedList = null,
+                friendList = emptySet(),
+                blockedList = emptySet(),
                 status = null
             )?.let {
                 // TODO: Create JWT token here to be shared with client? Response would be token plus OK?
