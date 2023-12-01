@@ -77,6 +77,4 @@ class ChatServer {
                 }
             }
         }
-
-    private suspend fun broadcast(message: String) = connections.forEach { it.session.send(message) }
 }
