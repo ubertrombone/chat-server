@@ -4,6 +4,7 @@ import com.joshrose.dao.DatabaseFactory.dbQuery
 import com.joshrose.models.GroupChat
 import com.joshrose.models.GroupChats
 import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
@@ -11,9 +12,9 @@ import java.time.LocalDateTime
 class DAOGroupChatImpl : DAOGroupChat {
     private fun resultRowToChatGroup(row: ResultRow) = GroupChat(
         name = row[GroupChats.name],
-        creator = row[GroupChats.creator],
+        creator = row[GroupChats.creator].toUsername(),
         createdDate = row[GroupChats.createdDate],
-        members = row[GroupChats.members].split(";").toSet(),
+        members = row[GroupChats.members].split(";").map { it.toUsername() }.toSet(),
     )
     override suspend fun allGroupChats(): List<GroupChat> = dbQuery {
         GroupChats.selectAll().map(::resultRowToChatGroup)
@@ -48,7 +49,7 @@ class DAOGroupChatImpl : DAOGroupChat {
     override suspend fun editGroupChat(groupChat: GroupChat): Boolean = dbQuery {
         GroupChats.update({ GroupChats.name eq groupChat.name }) {
             it[name] = groupChat.name
-            it[creator] = groupChat.creator
+            it[creator] = groupChat.creator.name
             it[createdDate] = groupChat.createdDate
             it[members] = groupChat.members.joinToString(";")
         } > 0

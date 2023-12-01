@@ -1,16 +1,17 @@
 package com.joshrose.models
 
+import com.joshrose.util.Username
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.time.LocalDateTime
 
 data class User(
     val password: String,
-    val username: String,
+    val username: Username,
     val isOnline: Boolean,
     val lastOnline: LocalDateTime,
-    val friendList: Set<String>,
-    val blockedList: Set<String>,
+    val friendList: Set<Username>,
+    val blockedList: Set<Username>,
     val status: String?
 )
 

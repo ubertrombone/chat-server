@@ -56,7 +56,7 @@ fun Route.friendRequestRoute() {
                     friendRequestDao.friendRequestExists(request, username) ->
                         call.respond(UnprocessableEntity, REQUEST_ALREADY_RECEIVED)
                     else -> {
-                        if (friendList.contains(request.name)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
+                        if (friendList.contains(request)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
                         else {
                             friendRequestDao.addNewFriendRequest(requesterUsername = username, toUsername = request)
                             call.respond(Accepted, "Request Sent!")

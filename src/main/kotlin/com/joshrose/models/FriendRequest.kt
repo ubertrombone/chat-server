@@ -1,13 +1,14 @@
 package com.joshrose.models
 
+import com.joshrose.util.Username
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
 data class FriendRequest(
     val id: Int,
-    val requesterUsername: String,
-    val toUsername: String
+    val requesterUsername: Username,
+    val toUsername: Username
 )
 
 object FriendRequests: Table() {

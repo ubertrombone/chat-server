@@ -36,12 +36,12 @@ fun Route.blockRoute() {
 
                 val user = dao.user(username)!!
                 val blockedList = user.blockedList
-                if (blockedList.contains(otherUser.name)) call.respond(Conflict, USER_ALREADY_BLOCKED)
+                if (blockedList.contains(otherUser)) call.respond(Conflict, USER_ALREADY_BLOCKED)
                 else {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = LocalDateTime.now(),
-                            friendList = blockedList.plus(otherUser.name)
+                            friendList = blockedList.plus(otherUser)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} is blocked!")
@@ -54,12 +54,12 @@ fun Route.blockRoute() {
 
                 val user = dao.user(username)!!
                 val blockedList = user.blockedList
-                if (!blockedList.contains(otherUser.name)) call.respond(BadRequest, USER_NOT_BLOCKED)
+                if (!blockedList.contains(otherUser)) call.respond(BadRequest, USER_NOT_BLOCKED)
                 else {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = LocalDateTime.now(),
-                            friendList = blockedList.minus(otherUser.name)
+                            friendList = blockedList.minus(otherUser)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} is unblocked!")

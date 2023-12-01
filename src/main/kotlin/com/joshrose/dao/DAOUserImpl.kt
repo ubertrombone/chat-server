@@ -8,6 +8,7 @@ import com.joshrose.models.Users
 import com.joshrose.models.Users.username
 import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
@@ -16,11 +17,11 @@ class DAOUserImpl : DAOUser {
     private fun resultRowToUser(row: ResultRow) = User(
         //id = row[Users.id],
         password = row[Users.password],
-        username = row[Users.username],
+        username = row[Users.username].toUsername(),
         isOnline = row[Users.isOnline],
         lastOnline = row[Users.lastOnline],
-        friendList = row[Users.friendList].split(";").toSet(),
-        blockedList = row[Users.blockedList].split(";").toSet(),
+        friendList = row[Users.friendList].split(";").map { it.toUsername() }.toSet(),
+        blockedList = row[Users.blockedList].split(";").map { it.toUsername() }.toSet(),
         status = row[Users.status]
     )
     override suspend fun allUsers(): List<User> = dbQuery {
@@ -40,7 +41,7 @@ class DAOUserImpl : DAOUser {
             .select { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .single()
-            .username
+            .username.name
     }
 
     override suspend fun addNewUser(
@@ -65,8 +66,8 @@ class DAOUserImpl : DAOUser {
     }
 
     override suspend fun editUser(user: User): Boolean = dbQuery {
-        Users.update({ username eq user.username }) {
-            it[username] = user.username
+        Users.update({ username eq user.username.name }) {
+            it[username] = user.username.name
             it[password] = user.password
             it[isOnline] = user.isOnline
             it[lastOnline] = user.lastOnline

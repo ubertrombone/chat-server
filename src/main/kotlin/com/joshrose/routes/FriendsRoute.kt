@@ -37,12 +37,12 @@ fun Route.friendsRoute() {
 
                 val user = dao.user(username)!!
                 val friendList = user.friendList
-                if (friendList.contains(otherUser.name)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
+                if (friendList.contains(otherUser)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
                 else {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = LocalDateTime.now(),
-                            friendList = friendList.plus(otherUser.name)
+                            friendList = friendList.plus(otherUser)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} added!")
@@ -55,12 +55,12 @@ fun Route.friendsRoute() {
 
                 val user = dao.user(username)!!
                 val friendList = user.friendList
-                if (!friendList.contains(otherUser.name)) call.respond(BadRequest, FRIEND_DOESNT_EXIST)
+                if (!friendList.contains(otherUser)) call.respond(BadRequest, FRIEND_DOESNT_EXIST)
                 else {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = LocalDateTime.now(),
-                            friendList = friendList.minus(otherUser.name)
+                            friendList = friendList.minus(otherUser)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} removed!")

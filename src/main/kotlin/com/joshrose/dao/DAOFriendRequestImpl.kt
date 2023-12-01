@@ -4,14 +4,15 @@ import com.joshrose.dao.DatabaseFactory.dbQuery
 import com.joshrose.models.FriendRequest
 import com.joshrose.models.FriendRequests
 import com.joshrose.util.Username
+import com.joshrose.util.toUsername
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DAOFriendRequestImpl : DAOFriendRequest {
     private fun resultRowToFriendRequest(row: ResultRow) = FriendRequest(
         id = row[FriendRequests.id],
-        requesterUsername = row[FriendRequests.requesterUsername],
-        toUsername = row[FriendRequests.toUsername]
+        requesterUsername = row[FriendRequests.requesterUsername].toUsername(),
+        toUsername = row[FriendRequests.toUsername].toUsername()
     )
     override suspend fun allFriendRequests(): List<FriendRequest> = dbQuery {
         FriendRequests.selectAll().map(::resultRowToFriendRequest)
@@ -54,8 +55,8 @@ class DAOFriendRequestImpl : DAOFriendRequest {
 
     override suspend fun editFriendRequest(friendRequest: FriendRequest): Boolean = dbQuery {
         FriendRequests.update({ FriendRequests.id eq friendRequest.id }) {
-            it[requesterUsername] = friendRequest.requesterUsername
-            it[toUsername] = friendRequest.toUsername
+            it[requesterUsername] = friendRequest.requesterUsername.name
+            it[toUsername] = friendRequest.toUsername.name
         } > 0
     }
 

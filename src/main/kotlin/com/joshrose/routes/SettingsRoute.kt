@@ -53,7 +53,7 @@ fun Route.settingsRoute() {
                 val user = dao.user(username)!!
                 validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
                     user = user.copy(
-                        username = request.newUsername.name,
+                        username = request.newUsername,
                         lastOnline = LocalDateTime.now()
                     )
                 ).also { call.respond(OK, SimpleResponse(true, "Username changed: ${request.newUsername}")) }
