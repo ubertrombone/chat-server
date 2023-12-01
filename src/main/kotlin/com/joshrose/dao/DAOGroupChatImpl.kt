@@ -13,7 +13,7 @@ class DAOGroupChatImpl : DAOGroupChat {
         name = row[GroupChats.name],
         creator = row[GroupChats.creator],
         createdDate = row[GroupChats.createdDate],
-        members = row[GroupChats.members],
+        members = row[GroupChats.members].split(";").toSet(),
     )
     override suspend fun allGroupChats(): List<GroupChat> = dbQuery {
         GroupChats.selectAll().map(::resultRowToChatGroup)
@@ -34,13 +34,13 @@ class DAOGroupChatImpl : DAOGroupChat {
         name: String,
         creator: Username,
         createdDate: LocalDateTime,
-        members: String?
+        members: Set<String>
     ): GroupChat? = dbQuery {
         val insertStatement = GroupChats.insert {
             it[GroupChats.name] = name
             it[GroupChats.creator] = creator.name
             it[GroupChats.createdDate] = createdDate
-            it[GroupChats.members] = members
+            it[GroupChats.members] = members.joinToString(";")
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToChatGroup)
     }
@@ -50,7 +50,7 @@ class DAOGroupChatImpl : DAOGroupChat {
             it[name] = groupChat.name
             it[creator] = groupChat.creator
             it[createdDate] = groupChat.createdDate
-            it[members] = groupChat.members
+            it[members] = groupChat.members.joinToString(";")
         } > 0
     }
 

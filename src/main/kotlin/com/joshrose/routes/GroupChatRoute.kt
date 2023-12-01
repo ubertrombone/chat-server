@@ -43,7 +43,7 @@ fun Route.groupChatRoute() {
                     name = request.name,
                     creator = user,
                     createdDate = LocalDateTime.now(),
-                    members = null
+                    members = emptySet()
                 )
                 call.respond(OK, "Group Created!")
             }
