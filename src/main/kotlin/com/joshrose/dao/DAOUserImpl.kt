@@ -3,12 +3,14 @@
 package com.joshrose.dao
 
 import com.joshrose.dao.DatabaseFactory.dbQuery
+import com.joshrose.models.FriendInfo
 import com.joshrose.models.User
 import com.joshrose.models.Users
 import com.joshrose.models.Users.username
 import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
+import io.ktor.server.http.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
@@ -33,6 +35,24 @@ class DAOUserImpl : DAOUser {
             .select { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()
+    }
+
+    override suspend fun friends(username: Username): Set<FriendInfo> = dbQuery {
+        Users
+            .select { Users.username.lowerCase() eq username.name.lowercase() }
+            .map(::resultRowToUser)
+            .singleOrNull()!!
+            .friendList
+            .map {
+                user(it)!!.let { user ->
+                    FriendInfo(
+                        username = user.username,
+                        isOnline = user.isOnline,
+                        lastOnline = if (!user.isOnline) user.lastOnline.toHttpDateString() else null
+                    )
+                }
+            }
+            .toSet()
     }
 
     // TODO: should probably remove now

@@ -27,7 +27,7 @@ fun Route.friendsRoute() {
         authenticate {
             get {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val friendList = dao.user(user)!!.friendList
+                val friendList = dao.friends(user)
                 call.respond(OK, friendList)
             }
 
