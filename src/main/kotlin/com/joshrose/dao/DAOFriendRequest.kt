@@ -11,5 +11,5 @@ interface DAOFriendRequest {
     suspend fun friendRequestExists(requesterUsername: Username, toUsername: Username): Boolean
     suspend fun addNewFriendRequest(requesterUsername: Username, toUsername: Username): FriendRequest?
     suspend fun editFriendRequest(friendRequest: FriendRequest): Boolean
-    suspend fun removeFriendRequest(id: Int): Boolean
+    suspend fun removeFriendRequest(fromUsername: Username, toUsername: Username): Boolean
 }

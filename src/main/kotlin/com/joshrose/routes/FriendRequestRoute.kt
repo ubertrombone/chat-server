@@ -6,7 +6,6 @@ import com.joshrose.Constants.FRIEND_REQUEST_EXISTS
 import com.joshrose.Constants.REQUEST_ALREADY_RECEIVED
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
-import com.joshrose.requests.CancelFriendRequestRequest
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
@@ -19,7 +18,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
@@ -66,14 +64,11 @@ fun Route.friendRequestRoute() {
             }
 
             post("/cancel_request") {
-                val request = try {
-                    call.receive<CancelFriendRequestRequest>()
-                } catch (e: ContentTransformationException) {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val (request, username) = receiveUsernames()
+                if (request == null) return@post
 
-                if (friendRequestDao.removeFriendRequest(request.id)) call.respond(OK, "Request cancelled!")
+                if (friendRequestDao.removeFriendRequest(username, request))
+                    call.respond(OK, "Request cancelled!")
                 else call.respond(BadRequest, FRIEND_REQUEST_DOESNT_EXIST)
             }
         }
