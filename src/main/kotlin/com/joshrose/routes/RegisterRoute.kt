@@ -47,7 +47,7 @@ fun Route.registerRoute(issuer: String, secret: String) {
                     withClaim("username", request.username.name)
                     withExpiresAt(Date(System.currentTimeMillis() + 600000))
                 }.sign(Algorithm.HMAC256(secret))
-                call.respond(OK, hashMapOf("token" to token))
+                call.respond(OK, SimpleResponse(true, token))
             } ?: call.respond(OK, SimpleResponse(false, "An unknown error occurred"))
         }
     }
