@@ -16,7 +16,7 @@ object GroupChats: Table() {
     val name = varchar("name", 100)
     val creator = varchar("creator", length = 24) references Users.username
     val createdDate = datetime("createdDate")
-    val members = varchar("members", 50000)
+    val members = varchar("members", 50000).nullable()
 
     override val primaryKey = PrimaryKey(name)
 }

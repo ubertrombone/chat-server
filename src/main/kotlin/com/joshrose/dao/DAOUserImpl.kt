@@ -22,8 +22,8 @@ class DAOUserImpl : DAOUser {
         username = row[Users.username].toUsername(),
         isOnline = row[Users.isOnline],
         lastOnline = row[Users.lastOnline],
-        friendList = row[Users.friendList].split(";").map { it.toUsername() }.toSet(),
-        blockedList = row[Users.blockedList].split(";").map { it.toUsername() }.toSet(),
+        friendList = row[Users.friendList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
+        blockedList = row[Users.blockedList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         status = row[Users.status]
     )
     override suspend fun allUsers(): List<User> = dbQuery {

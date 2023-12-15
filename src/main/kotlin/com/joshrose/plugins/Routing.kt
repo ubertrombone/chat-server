@@ -39,7 +39,7 @@ fun Application.configureRouting() {
     }
     routing {
         loginRoute(domain, secret)
-        registerRoute()
+        registerRoute(domain, secret)
         settingsRoute()
         friendsRoute()
         blockRoute()
