@@ -4,7 +4,7 @@ import com.joshrose.util.Username
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class LoginRequest(
+data class AuthenticationRequest(
     val username: Username,
     val password: String
 )
