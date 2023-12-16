@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AuthenticationRequest
-import com.joshrose.responses.SimpleResponse
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateAuth
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -38,12 +37,12 @@ fun Route.loginRoute(issuer: String, secret: String) {
                 withClaim("username", user.username.name)
                 withExpiresAt(Date(System.currentTimeMillis() + 600000))
             }.sign(Algorithm.HMAC256(secret))
-            call.respond(OK, SimpleResponse(true, token))
+            call.respond(OK, token)
         }
     }
 
     authenticate {
-        post("/login") {
+        get("/login") {
             call.respond(OK, "Token valid!")
         }
     }
