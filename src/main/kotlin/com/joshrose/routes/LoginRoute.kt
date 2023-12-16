@@ -49,7 +49,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
     }
 
     authenticate {
-        post("/logout") {
+        get("/logout") {
             val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
             val user = dao.user(username)!!
             dao.editUser(user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
