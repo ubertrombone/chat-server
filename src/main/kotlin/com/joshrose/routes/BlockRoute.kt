@@ -41,7 +41,7 @@ fun Route.blockRoute() {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = Clock.System.now(),
-                            friendList = blockedList.plus(otherUser)
+                            blockedList = blockedList.plus(otherUser)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} is blocked!")
@@ -59,7 +59,7 @@ fun Route.blockRoute() {
                     dao.editUser(
                         user = user.copy(
                             lastOnline = Clock.System.now(),
-                            friendList = blockedList.minus(otherUser)
+                            blockedList = blockedList.minus(otherUser)
                         )
                     )
                     call.respond(Accepted, "${otherUser.name} is unblocked!")
