@@ -1,9 +1,9 @@
 package com.joshrose.models
 
 import com.joshrose.util.Username
+import kotlinx.datetime.LocalDateTime
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
-import java.time.LocalDateTime
 
 data class User(
     val password: String,

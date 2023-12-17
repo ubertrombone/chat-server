@@ -10,7 +10,8 @@ import com.joshrose.models.Users.username
 import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
-import io.ktor.server.http.*
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toKotlinLocalDateTime
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
@@ -21,7 +22,7 @@ class DAOUserImpl : DAOUser {
         password = row[Users.password],
         username = row[Users.username].toUsername(),
         isOnline = row[Users.isOnline],
-        lastOnline = row[Users.lastOnline],
+        lastOnline = row[Users.lastOnline].toKotlinLocalDateTime(),
         friendList = row[Users.friendList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         blockedList = row[Users.blockedList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         status = row[Users.status]
@@ -48,7 +49,7 @@ class DAOUserImpl : DAOUser {
                     FriendInfo(
                         username = user.username,
                         isOnline = user.isOnline,
-                        lastOnline = if (!user.isOnline) user.lastOnline.toHttpDateString() else null
+                        lastOnline = if (!user.isOnline) user.lastOnline else null
                     )
                 }
             }
@@ -90,7 +91,7 @@ class DAOUserImpl : DAOUser {
             it[username] = user.username.name
             it[password] = user.password
             it[isOnline] = user.isOnline
-            it[lastOnline] = user.lastOnline
+            it[lastOnline] = user.lastOnline.toJavaLocalDateTime()
             it[friendList] = user.friendList.joinToString(";")
             it[blockedList] = user.blockedList.joinToString(";")
             it[status] = user.status
