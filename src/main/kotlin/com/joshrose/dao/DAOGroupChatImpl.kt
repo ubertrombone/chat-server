@@ -16,8 +16,8 @@ class DAOGroupChatImpl : DAOGroupChat {
         createdDate = row[GroupChats.createdDate],
         members = row[GroupChats.members]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
     )
-    override suspend fun allGroupChats(): List<GroupChat> = dbQuery {
-        GroupChats.selectAll().map(::resultRowToChatGroup)
+    override suspend fun allGroupChats(): Set<GroupChat> = dbQuery {
+        GroupChats.selectAll().map(::resultRowToChatGroup).toSet()
     }
 
     override suspend fun groupChat(name: String): GroupChat? = dbQuery {

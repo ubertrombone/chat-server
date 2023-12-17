@@ -5,7 +5,7 @@ import com.joshrose.util.Username
 import java.time.LocalDateTime
 
 interface DAOGroupChat {
-    suspend fun allGroupChats(): List<GroupChat>
+    suspend fun allGroupChats(): Set<GroupChat>
     suspend fun groupChat(name: String): GroupChat?
     suspend fun groupChatNameExists(name: String): Boolean
     suspend fun addNewGroupChat(
