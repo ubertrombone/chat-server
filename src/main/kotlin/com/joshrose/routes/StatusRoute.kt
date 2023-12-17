@@ -26,7 +26,7 @@ fun Route.statusRoute() {
             get {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val status = dao.user(user)!!.status
-                call.respond(OK, status ?: "")
+                call.respondNullable(OK, status)
             }
 
             post {
