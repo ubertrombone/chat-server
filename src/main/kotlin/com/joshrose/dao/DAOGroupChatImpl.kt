@@ -5,6 +5,8 @@ import com.joshrose.models.GroupChat
 import com.joshrose.models.GroupChats
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toKotlinLocalDateTime
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.LocalDateTime
@@ -13,7 +15,7 @@ class DAOGroupChatImpl : DAOGroupChat {
     private fun resultRowToChatGroup(row: ResultRow) = GroupChat(
         name = row[GroupChats.name],
         creator = row[GroupChats.creator].toUsername(),
-        createdDate = row[GroupChats.createdDate],
+        createdDate = row[GroupChats.createdDate].toKotlinLocalDateTime(),
         members = row[GroupChats.members]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
     )
     override suspend fun allGroupChats(): Set<GroupChat> = dbQuery {
@@ -50,7 +52,7 @@ class DAOGroupChatImpl : DAOGroupChat {
         GroupChats.update({ GroupChats.name eq groupChat.name }) {
             it[name] = groupChat.name
             it[creator] = groupChat.creator.name
-            it[createdDate] = groupChat.createdDate
+            it[createdDate] = groupChat.createdDate.toJavaLocalDateTime()
             it[members] = groupChat.members.joinToString(";")
         } > 0
     }

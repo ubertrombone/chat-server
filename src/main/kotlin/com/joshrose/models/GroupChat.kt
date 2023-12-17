@@ -1,10 +1,12 @@
 package com.joshrose.models
 
 import com.joshrose.util.Username
+import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.datetime
-import java.time.LocalDateTime
 
+@Serializable
 data class GroupChat(
     val name: String,
     val creator: Username,
