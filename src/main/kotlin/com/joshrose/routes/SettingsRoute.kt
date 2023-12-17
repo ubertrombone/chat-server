@@ -16,7 +16,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 
 fun Route.settingsRoute() {
     route("/settings") {
@@ -37,7 +37,7 @@ fun Route.settingsRoute() {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
                 validateUpdatePassword(username, request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
-                    user = user.copy(password = getHashWithSalt(request.newPassword), lastOnline = LocalDateTime.now())
+                    user = user.copy(password = getHashWithSalt(request.newPassword), lastOnline = Clock.System.now())
                 ).also { call.respond(OK, SimpleResponse(true, "Password reset successfully!")) }
             }
 
@@ -54,7 +54,7 @@ fun Route.settingsRoute() {
                 validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
                     user = user.copy(
                         username = request.newUsername,
-                        lastOnline = LocalDateTime.now()
+                        lastOnline = Clock.System.now()
                     )
                 ).also { call.respond(OK, SimpleResponse(true, "Username changed: ${request.newUsername}")) }
             }

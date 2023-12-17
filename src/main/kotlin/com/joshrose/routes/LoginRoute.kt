@@ -15,7 +15,7 @@ import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 import java.util.*
 
 fun Route.loginRoute(issuer: String, secret: String) {
@@ -51,7 +51,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
         get("/logout") {
             val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
             val user = dao.user(username)!!
-            dao.editUser(user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
+            dao.editUser(user.copy(isOnline = false, lastOnline = Clock.System.now()))
             call.respond(OK, "You are now logged out!")
         }
     }

@@ -8,9 +8,9 @@ import com.joshrose.plugins.groupChatDao
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.util.toUsername
 import io.ktor.websocket.*
+import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.time.LocalDateTime
 import java.util.*
 
 class ChatServer {
@@ -27,7 +27,7 @@ class ChatServer {
         connections -= connection
 
         val user = dao.user(connection.name)!!
-        dao.editUser(user = user.copy(isOnline = false, lastOnline = LocalDateTime.now()))
+        dao.editUser(user = user.copy(isOnline = false, lastOnline = Clock.System.now()))
 
         groupChatDao.allGroupChats()
             .filter { groupChat -> groupChat.members.contains(connection.name) }

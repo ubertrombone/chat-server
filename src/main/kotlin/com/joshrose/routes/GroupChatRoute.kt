@@ -2,7 +2,6 @@ package com.joshrose.routes
 
 import com.joshrose.plugins.groupChatDao
 import com.joshrose.requests.GroupChatNameRequest
-import com.joshrose.responses.SimpleResponse
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateGroupChat
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -14,7 +13,7 @@ import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 
 fun Route.groupChatRoute() {
 
@@ -26,8 +25,7 @@ fun Route.groupChatRoute() {
         authenticate {
             get {
                 val chats = groupChatDao.allGroupChats()
-                if (chats.isNotEmpty()) call.respond(OK, chats)
-                else call.respond(OK, SimpleResponse(false, "No group chats"))
+                call.respond(OK, chats)
             }
 
             post {
@@ -42,7 +40,7 @@ fun Route.groupChatRoute() {
                 groupChatDao.addNewGroupChat(
                     name = request.name,
                     creator = user,
-                    createdDate = LocalDateTime.now(),
+                    createdDate = Clock.System.now(),
                     members = emptySet()
                 )
                 call.respond(OK, "Group Created!")

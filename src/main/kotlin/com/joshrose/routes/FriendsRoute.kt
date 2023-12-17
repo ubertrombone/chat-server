@@ -15,7 +15,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 
 @Suppress("DuplicatedCode")
 fun Route.friendsRoute() {
@@ -41,7 +41,7 @@ fun Route.friendsRoute() {
                 else {
                     dao.editUser(
                         user = user.copy(
-                            lastOnline = LocalDateTime.now(),
+                            lastOnline = Clock.System.now(),
                             friendList = friendList.plus(otherUser)
                         )
                     )
@@ -59,7 +59,7 @@ fun Route.friendsRoute() {
                 else {
                     dao.editUser(
                         user = user.copy(
-                            lastOnline = LocalDateTime.now(),
+                            lastOnline = Clock.System.now(),
                             friendList = friendList.minus(otherUser)
                         )
                     )

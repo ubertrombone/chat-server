@@ -15,7 +15,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 
 fun Route.blockRoute() {
     route("/block") {
@@ -40,7 +40,7 @@ fun Route.blockRoute() {
                 else {
                     dao.editUser(
                         user = user.copy(
-                            lastOnline = LocalDateTime.now(),
+                            lastOnline = Clock.System.now(),
                             friendList = blockedList.plus(otherUser)
                         )
                     )
@@ -58,7 +58,7 @@ fun Route.blockRoute() {
                 else {
                     dao.editUser(
                         user = user.copy(
-                            lastOnline = LocalDateTime.now(),
+                            lastOnline = Clock.System.now(),
                             friendList = blockedList.minus(otherUser)
                         )
                     )

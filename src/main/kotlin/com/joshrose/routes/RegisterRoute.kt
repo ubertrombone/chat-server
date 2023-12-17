@@ -15,7 +15,7 @@ import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 import java.util.*
 
 fun Route.registerRoute(issuer: String, secret: String) {
@@ -37,7 +37,7 @@ fun Route.registerRoute(issuer: String, secret: String) {
                 username = request.username,
                 password = getHashWithSalt(request.password),
                 isOnline = true,
-                lastOnline = LocalDateTime.now(),
+                lastOnline = Clock.System.now(),
                 friendList = emptySet(),
                 blockedList = emptySet(),
                 status = null

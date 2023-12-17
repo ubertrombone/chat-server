@@ -14,7 +14,7 @@ import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 
 fun Route.statusRoute() {
     route("/status") {
@@ -41,7 +41,7 @@ fun Route.statusRoute() {
                 val user = dao.user(username)!!
                 dao.editUser(
                     user.copy(
-                        lastOnline = LocalDateTime.now(),
+                        lastOnline = Clock.System.now(),
                         status = request.status
                     )
                 )

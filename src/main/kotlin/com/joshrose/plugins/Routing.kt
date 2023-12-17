@@ -9,7 +9,7 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.runBlocking
-import java.time.LocalDateTime
+import kotlinx.datetime.Clock
 
 val dao: DAOUser = DAOUserImpl().apply {
     runBlocking {
@@ -18,7 +18,7 @@ val dao: DAOUser = DAOUserImpl().apply {
                 username = "ubertrombone".toUsername(),
                 password = getHashWithSalt("p@ssw0rd"),
                 isOnline = true,
-                lastOnline = LocalDateTime.now(),
+                lastOnline = Clock.System.now(),
                 friendList = emptySet(),
                 blockedList = emptySet(),
                 status = null
