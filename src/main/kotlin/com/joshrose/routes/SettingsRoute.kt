@@ -1,5 +1,6 @@
 package com.joshrose.routes
 
+import com.joshrose.plugins.archiveDao
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
 import com.joshrose.requests.UpdatePasswordRequest
@@ -71,7 +72,8 @@ fun Route.settingsRoute() {
                 if (request) {
                     // Keep username in friends lists to avoid performance hit and
                     // because the user will just appear offline forever
-                    // TODO: Archive username, last online, and status
+                    val user = dao.user(username)!!
+                    archiveDao.addToArchives(user)
                     friendRequestDao.deleteUserFromRequests(username)
                     dao.deleteUser(username)
                     call.respond(OK, "Account Deleted!")
