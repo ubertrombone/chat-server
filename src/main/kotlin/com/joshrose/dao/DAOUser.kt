@@ -3,7 +3,7 @@ package com.joshrose.dao
 import com.joshrose.models.FriendInfo
 import com.joshrose.models.User
 import com.joshrose.util.Username
-import java.time.LocalDateTime
+import kotlinx.datetime.Instant
 
 interface DAOUser {
     suspend fun allUsers(): List<User>
@@ -14,7 +14,7 @@ interface DAOUser {
         username: Username,
         password: String,
         isOnline: Boolean,
-        lastOnline: LocalDateTime,
+        lastOnline: Instant,
         friendList: Set<String>,
         blockedList: Set<String>,
         status: String?

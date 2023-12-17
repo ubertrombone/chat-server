@@ -2,7 +2,7 @@ package com.joshrose.dao
 
 import com.joshrose.models.GroupChat
 import com.joshrose.util.Username
-import java.time.LocalDateTime
+import kotlinx.datetime.Instant
 
 interface DAOGroupChat {
     suspend fun allGroupChats(): Set<GroupChat>
@@ -11,7 +11,7 @@ interface DAOGroupChat {
     suspend fun addNewGroupChat(
         name: String,
         creator: Username,
-        createdDate: LocalDateTime,
+        createdDate: Instant,
         members: Set<String>
     ): GroupChat?
     suspend fun editGroupChat(groupChat: GroupChat): Boolean

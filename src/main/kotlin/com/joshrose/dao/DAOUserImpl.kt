@@ -10,11 +10,11 @@ import com.joshrose.models.Users.username
 import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
-import kotlinx.datetime.toJavaLocalDateTime
-import kotlinx.datetime.toKotlinLocalDateTime
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toKotlinInstant
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import java.time.LocalDateTime
 
 class DAOUserImpl : DAOUser {
     private fun resultRowToUser(row: ResultRow) = User(
@@ -22,7 +22,7 @@ class DAOUserImpl : DAOUser {
         password = row[Users.password],
         username = row[Users.username].toUsername(),
         isOnline = row[Users.isOnline],
-        lastOnline = row[Users.lastOnline].toKotlinLocalDateTime(),
+        lastOnline = row[Users.lastOnline].toKotlinInstant(),
         friendList = row[Users.friendList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         blockedList = row[Users.blockedList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         status = row[Users.status]
@@ -69,7 +69,7 @@ class DAOUserImpl : DAOUser {
         username: Username,
         password: String,
         isOnline: Boolean,
-        lastOnline: LocalDateTime,
+        lastOnline: Instant,
         friendList: Set<String>,
         blockedList: Set<String>,
         status: String?
@@ -78,7 +78,7 @@ class DAOUserImpl : DAOUser {
             it[Users.username] = username.name
             it[Users.password] = password
             it[Users.isOnline] = isOnline
-            it[Users.lastOnline] = lastOnline
+            it[Users.lastOnline] = lastOnline.toJavaInstant()
             it[Users.friendList] = friendList.joinToString(";")
             it[Users.blockedList] = blockedList.joinToString(";")
             it[Users.status] = status
@@ -91,7 +91,7 @@ class DAOUserImpl : DAOUser {
             it[username] = user.username.name
             it[password] = user.password
             it[isOnline] = user.isOnline
-            it[lastOnline] = user.lastOnline.toJavaLocalDateTime()
+            it[lastOnline] = user.lastOnline.toJavaInstant()
             it[friendList] = user.friendList.joinToString(";")
             it[blockedList] = user.blockedList.joinToString(";")
             it[status] = user.status

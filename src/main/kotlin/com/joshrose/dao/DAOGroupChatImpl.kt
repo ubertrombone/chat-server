@@ -5,17 +5,17 @@ import com.joshrose.models.GroupChat
 import com.joshrose.models.GroupChats
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
-import kotlinx.datetime.toJavaLocalDateTime
-import kotlinx.datetime.toKotlinLocalDateTime
+import kotlinx.datetime.Instant
+import kotlinx.datetime.toJavaInstant
+import kotlinx.datetime.toKotlinInstant
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import java.time.LocalDateTime
 
 class DAOGroupChatImpl : DAOGroupChat {
     private fun resultRowToChatGroup(row: ResultRow) = GroupChat(
         name = row[GroupChats.name],
         creator = row[GroupChats.creator].toUsername(),
-        createdDate = row[GroupChats.createdDate].toKotlinLocalDateTime(),
+        createdDate = row[GroupChats.createdDate].toKotlinInstant(),
         members = row[GroupChats.members]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
     )
     override suspend fun allGroupChats(): Set<GroupChat> = dbQuery {
@@ -36,13 +36,13 @@ class DAOGroupChatImpl : DAOGroupChat {
     override suspend fun addNewGroupChat(
         name: String,
         creator: Username,
-        createdDate: LocalDateTime,
+        createdDate: Instant,
         members: Set<String>
     ): GroupChat? = dbQuery {
         val insertStatement = GroupChats.insert {
             it[GroupChats.name] = name
             it[GroupChats.creator] = creator.name
-            it[GroupChats.createdDate] = createdDate
+            it[GroupChats.createdDate] = createdDate.toJavaInstant()
             it[GroupChats.members] = members.joinToString(";")
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToChatGroup)
@@ -52,7 +52,7 @@ class DAOGroupChatImpl : DAOGroupChat {
         GroupChats.update({ GroupChats.name eq groupChat.name }) {
             it[name] = groupChat.name
             it[creator] = groupChat.creator.name
-            it[createdDate] = groupChat.createdDate.toJavaLocalDateTime()
+            it[createdDate] = groupChat.createdDate.toJavaInstant()
             it[members] = groupChat.members.joinToString(";")
         } > 0
     }
