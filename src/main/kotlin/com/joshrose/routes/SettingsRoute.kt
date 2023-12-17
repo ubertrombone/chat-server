@@ -1,9 +1,9 @@
 package com.joshrose.routes
 
 import com.joshrose.plugins.dao
+import com.joshrose.plugins.friendRequestDao
 import com.joshrose.requests.UpdatePasswordRequest
 import com.joshrose.requests.UpdateUsernameRequest
-import com.joshrose.responses.SimpleResponse
 import com.joshrose.security.getHashWithSalt
 import com.joshrose.util.toUsername
 import com.joshrose.util.validateUpdateNewUsername
@@ -38,7 +38,7 @@ fun Route.settingsRoute() {
                 val user = dao.user(username)!!
                 validateUpdatePassword(username, request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
                     user = user.copy(password = getHashWithSalt(request.newPassword), lastOnline = Clock.System.now())
-                ).also { call.respond(OK, SimpleResponse(true, "Password reset successfully!")) }
+                ).also { call.respond(OK, "Password reset successfully!") }
             }
 
             post("/updateuser") {
@@ -56,7 +56,7 @@ fun Route.settingsRoute() {
                         username = request.newUsername,
                         lastOnline = Clock.System.now()
                     )
-                ).also { call.respond(OK, SimpleResponse(true, "Username changed: ${request.newUsername}")) }
+                ).also { call.respond(OK, "Username changed: ${request.newUsername}") }
             }
 
             post("/delete") {
@@ -69,8 +69,12 @@ fun Route.settingsRoute() {
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 if (request) {
+                    // Keep username in friends lists to avoid performance hit and
+                    // because the user will just appear offline forever
+                    // TODO: Archive username, last online, and status
+                    friendRequestDao.deleteUserFromRequests(username)
                     dao.deleteUser(username)
-                    call.respond(OK, SimpleResponse(true, "Account Deleted!"))
+                    call.respond(OK, "Account Deleted!")
                 } else call.respond(BadRequest, "Request to delete account should not be 'false'.")
             }
         }
