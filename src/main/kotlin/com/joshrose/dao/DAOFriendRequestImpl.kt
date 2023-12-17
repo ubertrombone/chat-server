@@ -40,7 +40,8 @@ class DAOFriendRequestImpl : DAOFriendRequest {
     override suspend fun friendRequestExists(requesterUsername: Username, toUsername: Username): Boolean = dbQuery {
         FriendRequests
             .select {
-                FriendRequests.requesterUsername eq requesterUsername.name and (FriendRequests.toUsername eq toUsername.name)
+                (FriendRequests.requesterUsername.lowerCase() eq requesterUsername.name.lowercase()) and
+                        (FriendRequests.toUsername.lowerCase() eq toUsername.name.lowercase())
             }
             .count().toInt() > 0
     }
@@ -62,7 +63,15 @@ class DAOFriendRequestImpl : DAOFriendRequest {
 
     override suspend fun removeFriendRequest(fromUsername: Username, toUsername: Username): Boolean = dbQuery {
         FriendRequests.deleteWhere {
-            (FriendRequests.toUsername eq toUsername.name) and (FriendRequests.requesterUsername eq fromUsername.name)
+            (FriendRequests.toUsername.lowerCase() eq toUsername.name.lowercase())and
+                    (requesterUsername.lowerCase() eq fromUsername.name.lowercase())
+        } > 0
+    }
+
+    override suspend fun deleteUserFromRequests(user: Username): Boolean = dbQuery {
+        FriendRequests.deleteWhere {
+            (toUsername.lowerCase() eq user.name.lowercase()) or
+                    (requesterUsername.lowerCase() eq user.name.lowercase())
         } > 0
     }
 }
