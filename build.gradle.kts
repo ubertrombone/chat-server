@@ -37,6 +37,7 @@ dependencies {
     implementation(deps.ktor.serverNetty)
     implementation(deps.ktor.serverRequestValidation)
     implementation(deps.ktor.clientAuth)
+    implementation(deps.kotlinx.datetime)
     implementation("io.ktor:ktor-server-auth-jvm:2.3.6")
     implementation("io.ktor:ktor-server-core-jvm:2.3.6")
     implementation("io.ktor:ktor-server-auth-jwt-jvm:2.3.6")
