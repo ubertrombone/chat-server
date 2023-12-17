@@ -45,6 +45,8 @@ class DAOUserImpl : DAOUser {
             .singleOrNull()!!
             .friendList
             .map {
+                // TODO: Filter out names in the block list
+                // TODO: with new account deletion setup, user could be null
                 user(it)!!.let { user ->
                     FriendInfo(
                         username = user.username,
@@ -54,15 +56,6 @@ class DAOUserImpl : DAOUser {
                 }
             }
             .toSet()
-    }
-
-    // TODO: should probably remove now
-    override suspend fun loginUser(username: Username): String = dbQuery {
-        Users
-            .select { Users.username.lowerCase() eq username.name.lowercase() }
-            .map(::resultRowToUser)
-            .single()
-            .username.name
     }
 
     override suspend fun addNewUser(

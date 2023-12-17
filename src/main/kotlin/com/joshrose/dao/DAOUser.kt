@@ -9,7 +9,6 @@ interface DAOUser {
     suspend fun allUsers(): List<User>
     suspend fun user(username: Username): User?
     suspend fun friends(username: Username): Set<FriendInfo>
-    suspend fun loginUser(username: Username): String
     suspend fun addNewUser(
         username: Username,
         password: String,
