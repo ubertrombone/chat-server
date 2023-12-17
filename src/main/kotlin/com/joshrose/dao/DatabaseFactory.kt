@@ -1,5 +1,6 @@
 package com.joshrose.dao
 
+import com.joshrose.models.Archives
 import com.joshrose.models.FriendRequests
 import com.joshrose.models.GroupChats
 import com.joshrose.models.Users
@@ -24,7 +25,7 @@ object DatabaseFactory {
 
     private fun createSchema() {
         transaction {
-            SchemaUtils.create(Users, FriendRequests, GroupChats)
+            SchemaUtils.create(Users, FriendRequests, GroupChats, Archives)
         }
     }
 
