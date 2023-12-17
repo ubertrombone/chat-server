@@ -14,20 +14,20 @@ class DAOFriendRequestImpl : DAOFriendRequest {
         requesterUsername = row[FriendRequests.requesterUsername].toUsername(),
         toUsername = row[FriendRequests.toUsername].toUsername()
     )
-    override suspend fun allFriendRequests(): List<FriendRequest> = dbQuery {
-        FriendRequests.selectAll().map(::resultRowToFriendRequest)
+    override suspend fun allFriendRequests(): Set<FriendRequest> = dbQuery {
+        FriendRequests.selectAll().map(::resultRowToFriendRequest).toSet()
     }
 
-    override suspend fun sentFriendRequests(requesterUsername: Username): List<FriendRequest> = dbQuery {
+    override suspend fun sentFriendRequests(requesterUsername: Username): Set<FriendRequest> = dbQuery {
         FriendRequests
             .select { FriendRequests.requesterUsername.lowerCase() eq requesterUsername.name.lowercase() }
-            .map(::resultRowToFriendRequest)
+            .map(::resultRowToFriendRequest).toSet()
     }
 
-    override suspend fun receivedFriendRequests(toUsername: Username): List<FriendRequest> = dbQuery {
+    override suspend fun receivedFriendRequests(toUsername: Username): Set<FriendRequest> = dbQuery {
         FriendRequests
             .select { FriendRequests.toUsername.lowerCase() eq toUsername.name.lowercase() }
-            .map(::resultRowToFriendRequest)
+            .map(::resultRowToFriendRequest).toSet()
     }
 
     override suspend fun friendRequest(id: Int): FriendRequest? = dbQuery {

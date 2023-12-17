@@ -6,7 +6,6 @@ import com.joshrose.Constants.FRIEND_REQUEST_EXISTS
 import com.joshrose.Constants.REQUEST_ALREADY_RECEIVED
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
-import com.joshrose.responses.SimpleResponse
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.Accepted
@@ -31,15 +30,13 @@ fun Route.friendRequestRoute() {
             get("/sent_friend_requests") {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val sentRequests = friendRequestDao.sentFriendRequests(user)
-                if (sentRequests.isNotEmpty()) call.respond(OK, sentRequests)
-                else call.respond(OK, SimpleResponse(false, "No friend requests"))
+                call.respond(OK, sentRequests)
             }
 
             get("/received_friend_requests") {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val receivedRequests = friendRequestDao.receivedFriendRequests(user)
-                if (receivedRequests.isNotEmpty()) call.respond(OK, receivedRequests)
-                else call.respond(OK, SimpleResponse(false, "No friend requests"))
+                call.respond(OK, receivedRequests)
             }
 
             post {
