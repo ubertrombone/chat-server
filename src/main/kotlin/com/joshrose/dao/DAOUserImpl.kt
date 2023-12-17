@@ -18,15 +18,15 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DAOUserImpl : DAOUser {
     private fun resultRowToUser(row: ResultRow) = User(
-        //id = row[Users.id],
         password = row[Users.password],
-        username = row[Users.username].toUsername(),
+        username = row[username].toUsername(),
         isOnline = row[Users.isOnline],
         lastOnline = row[Users.lastOnline].toKotlinInstant(),
         friendList = row[Users.friendList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         blockedList = row[Users.blockedList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         status = row[Users.status]
     )
+
     override suspend fun allUsers(): List<User> = dbQuery {
         Users.selectAll().map(::resultRowToUser)
     }
