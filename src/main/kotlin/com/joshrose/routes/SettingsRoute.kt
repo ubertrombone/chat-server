@@ -60,8 +60,8 @@ fun Route.settingsRoute() {
                 ).also { call.respond(OK, "Username changed: ${request.newUsername}") }
             }
 
-            post("/delete") {
-                val request = try {
+            post("/cache") {
+                val cache = try {
                     call.receive<Boolean>()
                 } catch (e: ContentTransformationException) {
                     call.respond(BadRequest)
@@ -69,7 +69,25 @@ fun Route.settingsRoute() {
                 }
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                if (request) {
+                val user = dao.user(username)!!
+                dao.editUser(
+                    user = user.copy(
+                        cache = cache,
+                        lastOnline = Clock.System.now()
+                    )
+                )
+            }
+
+            post("/delete") {
+                val delete = try {
+                    call.receive<Boolean>()
+                } catch (e: ContentTransformationException) {
+                    call.respond(BadRequest)
+                    return@post
+                }
+
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
+                if (delete) {
                     // Keep username in friends lists to avoid performance hit and
                     // because the user will just appear offline forever
                     val user = dao.user(username)!!
