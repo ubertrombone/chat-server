@@ -15,6 +15,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.async
 import kotlinx.datetime.Clock
 
 @Suppress("DuplicatedCode")
@@ -27,8 +28,11 @@ fun Route.friendsRoute() {
         authenticate {
             get {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val friendList = dao.friends(user)
-                call.respond(OK, friendList)
+                val blockList = async { dao.user(user)!!.blockedList }
+                val friendList = async { dao.friends(user) }
+                val bAwait = blockList.await()
+                val fAwait = friendList.await().filterNot { bAwait.contains(it.username) }.toSet()
+                call.respond(OK, fAwait)
             }
 
             post("/add") {
