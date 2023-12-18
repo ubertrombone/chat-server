@@ -7,6 +7,7 @@ import com.joshrose.models.FriendInfo
 import com.joshrose.models.User
 import com.joshrose.models.Users
 import com.joshrose.models.Users.username
+import com.joshrose.plugins.archiveDao
 import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
@@ -44,10 +45,12 @@ class DAOUserImpl : DAOUser {
             .map(::resultRowToUser)
             .singleOrNull()!!
             .friendList
-            .map {
-                // TODO: Filter out names in the block list
-                // TODO: with new account deletion setup, user could be null
-                user(it)!!.let { user ->
+            .onEach {
+                if (archiveDao.userInArchive(it))
+                    with (user(username)!!) { editUser(copy(friendList = friendList.minus(it))) }
+            }
+            .mapNotNull {
+                user(it)?.let { user ->
                     FriendInfo(
                         username = user.username,
                         isOnline = user.isOnline,
