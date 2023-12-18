@@ -28,6 +28,13 @@ class DAOArchiveImpl : DAOArchive {
             .singleOrNull()
     }
 
+    override suspend fun userInArchive(username: Username): Boolean = dbQuery {
+        Archives
+            .select { Archives.username.lowerCase() eq username.name.lowercase() }
+            .map(::resultRowToUser)
+            .singleOrNull()?.let { true } ?: false
+    }
+
     override suspend fun addToArchives(user: User): Archive? = dbQuery {
         val insertStatement = Archives.insert {
             it[username] = user.username.name
