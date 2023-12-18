@@ -40,7 +40,8 @@ fun Route.registerRoute(issuer: String, secret: String) {
                 lastOnline = Clock.System.now(),
                 friendList = emptySet(),
                 blockedList = emptySet(),
-                status = null
+                status = null,
+                cache = false
             )?.let {
                 val token = JWT.create().apply {
                     withIssuer(issuer)

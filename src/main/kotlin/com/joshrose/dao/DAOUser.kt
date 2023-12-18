@@ -16,7 +16,8 @@ interface DAOUser {
         lastOnline: Instant,
         friendList: Set<String>,
         blockedList: Set<String>,
-        status: String?
+        status: String?,
+        cache: Boolean
     ): User?
     suspend fun editUser(user: User): Boolean
     suspend fun deleteUser(username: Username): Boolean

@@ -12,7 +12,8 @@ data class User(
     val lastOnline: Instant,
     val friendList: Set<Username>,
     val blockedList: Set<Username>,
-    val status: String?
+    val status: String?,
+    val cache: Boolean
 )
 
 object Users: Table() {
@@ -23,6 +24,7 @@ object Users: Table() {
     val friendList = varchar("friendList", 50000).nullable()
     val blockedList = varchar("blockedList", 50000).nullable()
     val status = varchar("status", 256).nullable()
+    val cache = bool("cache")
 
     override val primaryKey = PrimaryKey(username)
 }

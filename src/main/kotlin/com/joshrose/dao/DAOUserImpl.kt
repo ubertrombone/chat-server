@@ -25,7 +25,8 @@ class DAOUserImpl : DAOUser {
         lastOnline = row[Users.lastOnline].toKotlinInstant(),
         friendList = row[Users.friendList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
         blockedList = row[Users.blockedList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
-        status = row[Users.status]
+        status = row[Users.status],
+        cache = row[Users.cache]
     )
 
     override suspend fun allUsers(): List<User> = dbQuery {
@@ -68,7 +69,8 @@ class DAOUserImpl : DAOUser {
         lastOnline: Instant,
         friendList: Set<String>,
         blockedList: Set<String>,
-        status: String?
+        status: String?,
+        cache: Boolean
     ): User? = dbQuery {
         val insertStatement = Users.insert {
             it[Users.username] = username.name
@@ -78,6 +80,7 @@ class DAOUserImpl : DAOUser {
             it[Users.friendList] = friendList.joinToString(";")
             it[Users.blockedList] = blockedList.joinToString(";")
             it[Users.status] = status
+            it[Users.cache] = cache
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToUser)
     }
@@ -91,6 +94,7 @@ class DAOUserImpl : DAOUser {
             it[friendList] = user.friendList.joinToString(";")
             it[blockedList] = user.blockedList.joinToString(";")
             it[status] = user.status
+            it[cache] = user.cache
         } > 0
     }
 

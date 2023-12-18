@@ -21,7 +21,8 @@ val dao: DAOUser = DAOUserImpl().apply {
                 lastOnline = Clock.System.now(),
                 friendList = emptySet(),
                 blockedList = emptySet(),
-                status = null
+                status = null,
+                cache = true
             )
         }
     }
