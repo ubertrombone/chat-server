@@ -60,6 +60,12 @@ fun Route.settingsRoute() {
                 ).also { call.respond(OK, "Username changed: ${request.newUsername}") }
             }
 
+            get("/cache") {
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
+                val cache = dao.user(username)!!.cache
+                call.respond(OK, cache)
+            }
+
             post("/cache") {
                 val cache = try {
                     call.receive<Boolean>()
