@@ -23,8 +23,16 @@ class DAOUserImpl : DAOUser {
         username = row[username].toUsername(),
         isOnline = row[Users.isOnline],
         lastOnline = row[Users.lastOnline].toKotlinInstant(),
-        friendList = row[Users.friendList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
-        blockedList = row[Users.blockedList]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
+        friendList = row[Users.friendList]
+            ?.split(";")
+            ?.mapNotNull { try { it.toUsername() } catch (e: IllegalArgumentException) { null } }
+            ?.toSet()
+            ?: emptySet(),
+        blockedList = row[Users.blockedList]
+            ?.split(";")
+            ?.mapNotNull { try { it.toUsername() } catch (e: IllegalArgumentException) { null } }
+            ?.toSet()
+            ?: emptySet(),
         status = row[Users.status],
         cache = row[Users.cache]
     )

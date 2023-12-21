@@ -16,7 +16,11 @@ class DAOGroupChatImpl : DAOGroupChat {
         name = row[GroupChats.name],
         creator = row[GroupChats.creator].toUsername(),
         createdDate = row[GroupChats.createdDate].toKotlinInstant(),
-        members = row[GroupChats.members]?.split(";")?.map { it.toUsername() }?.toSet() ?: emptySet(),
+        members = row[GroupChats.members]
+            ?.split(";")
+            ?.mapNotNull { try { it.toUsername() } catch (e: IllegalArgumentException) { null } }
+            ?.toSet()
+            ?: emptySet(),
     )
     override suspend fun allGroupChats(): Set<GroupChat> = dbQuery {
         GroupChats.selectAll().map(::resultRowToChatGroup).toSet()
