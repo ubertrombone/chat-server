@@ -6,7 +6,6 @@ import com.joshrose.plugins.dao
 import com.joshrose.requests.AccountRequest
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.security.getHashWithSalt
-import com.joshrose.validations.validatePassword
 import com.joshrose.validations.validateUsername
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -22,7 +21,6 @@ fun Route.registerRoute(issuer: String, secret: String) {
     route("/register") {
         install(RequestValidation) {
             validateUsername()
-            validatePassword()
         }
 
         post {
