@@ -23,7 +23,7 @@ fun Application.configureSecurity() {
             )
             validate { credential ->
                 with(credential.payload) {
-                    if (getClaim("username").asString() != "") JWTPrincipal(credential.payload) else null
+                    if (getClaim("username").asString() != "") JWTPrincipal(this) else null
                 }
             }
             challenge { _, _ ->
