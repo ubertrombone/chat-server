@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AccountRequest
-import com.joshrose.responses.SimpleResponse
 import com.joshrose.security.getHashWithSalt
 import com.joshrose.validations.validateUsername
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -46,8 +45,8 @@ fun Route.registerRoute(issuer: String, secret: String) {
                     withClaim("username", request.username.name)
                     withExpiresAt(Date(System.currentTimeMillis() + 600000))
                 }.sign(Algorithm.HMAC256(secret))
-                call.respond(OK, SimpleResponse(true, token))
-            } ?: call.respond(OK, SimpleResponse(false, "An unknown error occurred"))
+                call.respond(OK, token)
+            } ?: call.respond(BadRequest, "An unknown error occurred")
         }
     }
 }
