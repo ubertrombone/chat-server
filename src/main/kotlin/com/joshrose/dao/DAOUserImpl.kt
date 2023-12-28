@@ -63,6 +63,7 @@ class DAOUserImpl : DAOUser {
                     FriendInfo(
                         username = user.username,
                         isOnline = user.isOnline,
+                        status = user.status,
                         lastOnline = if (!user.isOnline) user.lastOnline else null
                     )
                 }

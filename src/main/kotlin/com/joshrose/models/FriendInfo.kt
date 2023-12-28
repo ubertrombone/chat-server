@@ -8,5 +8,6 @@ import kotlinx.serialization.Serializable
 data class FriendInfo(
     val username: Username,
     val isOnline: Boolean,
+    val status: String?,
     val lastOnline: Instant?
 )
