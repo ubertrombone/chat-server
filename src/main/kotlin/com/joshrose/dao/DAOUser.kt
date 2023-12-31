@@ -14,8 +14,8 @@ interface DAOUser {
         password: String,
         isOnline: Boolean,
         lastOnline: Instant,
-        friendList: Set<String>,
-        blockedList: Set<String>,
+        friendList: Set<Username>,
+        blockedList: Set<Username>,
         status: String?,
         cache: Boolean
     ): User?

@@ -76,8 +76,8 @@ class DAOUserImpl : DAOUser {
         password: String,
         isOnline: Boolean,
         lastOnline: Instant,
-        friendList: Set<String>,
-        blockedList: Set<String>,
+        friendList: Set<Username>,
+        blockedList: Set<Username>,
         status: String?,
         cache: Boolean
     ): User? = dbQuery {
@@ -86,8 +86,8 @@ class DAOUserImpl : DAOUser {
             it[Users.password] = password
             it[Users.isOnline] = isOnline
             it[Users.lastOnline] = lastOnline.toJavaInstant()
-            it[Users.friendList] = friendList.joinToString(";")
-            it[Users.blockedList] = blockedList.joinToString(";")
+            it[Users.friendList] = friendList.joinToString(";") { name -> name.name }
+            it[Users.blockedList] = blockedList.joinToString(";") { name -> name.name }
             it[Users.status] = status
             it[Users.cache] = cache
         }
@@ -100,8 +100,8 @@ class DAOUserImpl : DAOUser {
             it[password] = user.password
             it[isOnline] = user.isOnline
             it[lastOnline] = user.lastOnline.toJavaInstant()
-            it[friendList] = user.friendList.joinToString(";")
-            it[blockedList] = user.blockedList.joinToString(";")
+            it[friendList] = user.friendList.joinToString(";") { name -> name.name }
+            it[blockedList] = user.blockedList.joinToString(";") { name -> name.name }
             it[status] = user.status
             it[cache] = user.cache
         } > 0
