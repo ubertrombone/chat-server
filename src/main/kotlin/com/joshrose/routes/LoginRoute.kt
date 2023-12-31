@@ -17,7 +17,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.Clock
 import java.util.*
-// TODO: Login/Authenticate aren't updating isOnline property
+
 fun Route.loginRoute(issuer: String, secret: String) {
     route("/authenticate") {
         install(RequestValidation) {
