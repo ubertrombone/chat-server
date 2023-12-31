@@ -41,13 +41,13 @@ class DAOGroupChatImpl : DAOGroupChat {
         name: String,
         creator: Username,
         createdDate: Instant,
-        members: Set<String>
+        members: Set<Username>
     ): GroupChat? = dbQuery {
         val insertStatement = GroupChats.insert {
             it[GroupChats.name] = name
             it[GroupChats.creator] = creator.name
             it[GroupChats.createdDate] = createdDate.toJavaInstant()
-            it[GroupChats.members] = members.joinToString(";")
+            it[GroupChats.members] = members.joinToString(";") { name -> name.name }
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToChatGroup)
     }
@@ -57,7 +57,7 @@ class DAOGroupChatImpl : DAOGroupChat {
             it[name] = groupChat.name
             it[creator] = groupChat.creator.name
             it[createdDate] = groupChat.createdDate.toJavaInstant()
-            it[members] = groupChat.members.joinToString(";")
+            it[members] = groupChat.members.joinToString(";") { name -> name.name }
         } > 0
     }
 
