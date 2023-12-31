@@ -17,7 +17,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.Clock
 import java.util.*
-
+// TODO: Login/Authenticate aren't updating isOnline property
 fun Route.loginRoute(issuer: String, secret: String) {
     route("/authenticate") {
         install(RequestValidation) {
@@ -37,12 +37,17 @@ fun Route.loginRoute(issuer: String, secret: String) {
                 withClaim("username", user.username.name)
                 withExpiresAt(Date(System.currentTimeMillis() + 600000))
             }.sign(Algorithm.HMAC256(secret))
+            val username = dao.user(user.username)!!
+            dao.editUser(username.copy(isOnline = true))
             call.respond(OK, token)
         }
     }
 
     authenticate {
         get("/login") {
+            val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
+            val user = dao.user(username)!!
+            dao.editUser(user.copy(isOnline = true))
             call.respond(OK, "Token valid!")
         }
     }
