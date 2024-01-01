@@ -30,7 +30,6 @@ fun Route.settingsRoute() {
             }
 
             post("/updatepwd") {
-
                 val request = call.receiveOrNull<UpdatePasswordRequest>() ?: run {
                     call.respond(BadRequest)
                     return@post
