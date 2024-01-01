@@ -6,6 +6,7 @@ import com.joshrose.plugins.friendRequestDao
 import com.joshrose.requests.UpdatePasswordRequest
 import com.joshrose.requests.UpdateUsernameRequest
 import com.joshrose.security.getHashWithSalt
+import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.util.validateUpdateNewUsername
 import com.joshrose.util.validateUpdatePassword
@@ -14,9 +15,10 @@ import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.datetime.Clock
 
 fun Route.settingsRoute() {
@@ -28,9 +30,8 @@ fun Route.settingsRoute() {
             }
 
             post("/updatepwd") {
-                val request = try {
-                    call.receive<UpdatePasswordRequest>()
-                } catch (e: ContentTransformationException) {
+
+                val request = call.receiveOrNull<UpdatePasswordRequest>() ?: run {
                     call.respond(BadRequest)
                     return@post
                 }
@@ -43,9 +44,7 @@ fun Route.settingsRoute() {
             }
 
             post("/updateuser") {
-                val request = try {
-                    call.receive<UpdateUsernameRequest>()
-                } catch (e: ContentTransformationException) {
+                val request = call.receiveOrNull<UpdateUsernameRequest>() ?: run {
                     call.respond(BadRequest)
                     return@post
                 }
@@ -67,9 +66,7 @@ fun Route.settingsRoute() {
             }
 
             post("/cache") {
-                val cache = try {
-                    call.receive<Boolean>()
-                } catch (e: ContentTransformationException) {
+                val cache = call.receiveOrNull<Boolean>() ?: run {
                     call.respond(BadRequest)
                     return@post
                 }
@@ -85,9 +82,7 @@ fun Route.settingsRoute() {
             }
 
             post("/delete") {
-                val delete = try {
-                    call.receive<Boolean>()
-                } catch (e: ContentTransformationException) {
+                val delete = call.receiveOrNull<Boolean>() ?: run {
                     call.respond(BadRequest)
                     return@post
                 }
@@ -97,9 +92,10 @@ fun Route.settingsRoute() {
                     // Keep username in friends lists to avoid performance hit and
                     // because the user will just appear offline forever
                     val user = dao.user(username)!!
-                    archiveDao.addToArchives(user)
-                    friendRequestDao.deleteUserFromRequests(username)
-                    dao.deleteUser(username)
+                    val archiveUser = async { archiveDao.addToArchives(user) }
+                    val deleteRequest = async { friendRequestDao.deleteUserFromRequests(username) }
+                    val deleteUser = async { dao.deleteUser(username) }
+                    awaitAll(archiveUser, deleteRequest, deleteUser)
                     call.respond(OK, "Account Deleted!")
                 } else call.respond(BadRequest, "Request to delete account should not be 'false'.")
             }

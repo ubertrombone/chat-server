@@ -5,12 +5,12 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AccountRequest
 import com.joshrose.security.getHashWithSalt
+import com.joshrose.util.receiveOrNull
 import com.joshrose.validations.validateUsername
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.plugins.requestvalidation.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.Clock
@@ -23,9 +23,7 @@ fun Route.registerRoute(issuer: String, secret: String) {
         }
 
         post {
-            val request = try {
-                call.receive<AccountRequest>()
-            } catch (e: ContentTransformationException) {
+            val request = call.receiveOrNull<AccountRequest>() ?: run {
                 call.respond(BadRequest)
                 return@post
             }

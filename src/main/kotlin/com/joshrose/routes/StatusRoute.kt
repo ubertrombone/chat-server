@@ -2,6 +2,7 @@ package com.joshrose.routes
 
 import com.joshrose.plugins.dao
 import com.joshrose.requests.StatusRequest
+import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateStatus
 import io.ktor.http.HttpStatusCode.Companion.Accepted
@@ -11,7 +12,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.Clock
@@ -30,9 +30,7 @@ fun Route.statusRoute() {
             }
 
             post {
-                val request = try {
-                    call.receive<StatusRequest>()
-                } catch (e: ContentTransformationException) {
+                val request = call.receiveOrNull<StatusRequest>() ?: run {
                     call.respond(BadRequest)
                     return@post
                 }
