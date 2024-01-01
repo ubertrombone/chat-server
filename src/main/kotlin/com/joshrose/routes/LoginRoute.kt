@@ -15,6 +15,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.async
 import kotlinx.datetime.Clock
 import java.util.*
 
@@ -30,14 +31,18 @@ fun Route.loginRoute(issuer: String, secret: String) {
                 return@post
             }
 
-            val token = JWT.create().apply {
-                withIssuer(issuer)
-                withClaim("username", user.username.name)
-                withExpiresAt(Date(System.currentTimeMillis() + 600000))
-            }.sign(Algorithm.HMAC256(secret))
-            val username = dao.user(user.username)!!
-            dao.editUser(username.copy(isOnline = true))
-            call.respond(OK, token)
+            val token = async {
+                JWT.create().apply {
+                    withIssuer(issuer)
+                    withClaim("username", user.username.name)
+                    withExpiresAt(Date(System.currentTimeMillis() + 600000))
+                }.sign(Algorithm.HMAC256(secret))
+            }
+            async {
+                val username = dao.user(user.username)!!
+                dao.editUser(username.copy(isOnline = true))
+            }.await()
+            call.respond(OK, token.await())
         }
     }
 
