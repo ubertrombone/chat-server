@@ -5,6 +5,7 @@ import com.joshrose.models.GroupChat
 import com.joshrose.models.GroupChats
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
+import com.joshrose.util.toUsernameOrNull
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
@@ -18,7 +19,7 @@ class DAOGroupChatImpl : DAOGroupChat {
         createdDate = row[GroupChats.createdDate].toKotlinInstant(),
         members = row[GroupChats.members]
             ?.split(";")
-            ?.mapNotNull { try { it.toUsername() } catch (e: IllegalArgumentException) { null } }
+            ?.mapNotNull { it.toUsernameOrNull() }
             ?.toSet()
             ?: emptySet(),
     )

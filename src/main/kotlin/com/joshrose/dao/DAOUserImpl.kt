@@ -11,6 +11,7 @@ import com.joshrose.plugins.archiveDao
 import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
+import com.joshrose.util.toUsernameOrNull
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
@@ -25,12 +26,12 @@ class DAOUserImpl : DAOUser {
         lastOnline = row[Users.lastOnline].toKotlinInstant(),
         friendList = row[Users.friendList]
             ?.split(";")
-            ?.mapNotNull { try { it.toUsername() } catch (e: IllegalArgumentException) { null } }
+            ?.mapNotNull { it.toUsernameOrNull() }
             ?.toSet()
             ?: emptySet(),
         blockedList = row[Users.blockedList]
             ?.split(";")
-            ?.mapNotNull { try { it.toUsername() } catch (e: IllegalArgumentException) { null } }
+            ?.mapNotNull { it.toUsernameOrNull() }
             ?.toSet()
             ?: emptySet(),
         status = row[Users.status],
