@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AuthenticationRequest
+import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateAuth
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -12,7 +13,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
-import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.Clock
@@ -25,9 +25,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
         }
 
         post {
-            val user = try {
-                call.receive<AuthenticationRequest>()
-            } catch (e: ContentTransformationException) {
+            val user = call.receiveOrNull<AuthenticationRequest>() ?: run {
                 call.respond(BadRequest)
                 return@post
             }
