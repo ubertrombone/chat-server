@@ -2,6 +2,7 @@ package com.joshrose.plugins
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.joshrose.Constants.UNAUTHORIZED
 import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -27,7 +28,7 @@ fun Application.configureSecurity() {
                 }
             }
             challenge { _, _ ->
-                call.respond(Unauthorized, "Token is not valid or has expired")
+                call.respond(Unauthorized, UNAUTHORIZED)
             }
         }
     }
