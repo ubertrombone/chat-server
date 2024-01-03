@@ -22,6 +22,7 @@ import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 
+@Suppress("DuplicatedCode")
 fun StatusPagesConfig.statusPages() {
     exception<RequestValidationException> { call, cause ->
         when {
