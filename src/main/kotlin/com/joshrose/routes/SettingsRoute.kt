@@ -30,10 +30,7 @@ fun Route.settingsRoute() {
             }
 
             post("/updatepwd") {
-                val request = call.receiveOrNull<UpdatePasswordRequest>() ?: run {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val request = call.receiveOrNull<UpdatePasswordRequest>() ?: return@post
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
@@ -43,10 +40,7 @@ fun Route.settingsRoute() {
             }
 
             post("/updateuser") {
-                val request = call.receiveOrNull<UpdateUsernameRequest>() ?: run {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val request = call.receiveOrNull<UpdateUsernameRequest>() ?: return@post
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
@@ -65,10 +59,7 @@ fun Route.settingsRoute() {
             }
 
             post("/cache") {
-                val cache = call.receiveOrNull<Boolean>() ?: run {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val cache = call.receiveOrNull<Boolean>() ?: return@post
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
@@ -81,10 +72,7 @@ fun Route.settingsRoute() {
             }
 
             post("/delete") {
-                val delete = call.receiveOrNull<Boolean>() ?: run {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val delete = call.receiveOrNull<Boolean>() ?: return@post
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 if (delete) {

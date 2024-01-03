@@ -5,7 +5,6 @@ import com.joshrose.requests.GroupChatNameRequest
 import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateGroupChat
-import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -29,10 +28,7 @@ fun Route.groupChatRoute() {
             }
 
             post {
-                val request = call.receiveOrNull<GroupChatNameRequest>() ?: run {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val request = call.receiveOrNull<GroupChatNameRequest>() ?: return@post
 
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 groupChatDao.addNewGroupChat(

@@ -6,7 +6,6 @@ import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateStatus
 import io.ktor.http.HttpStatusCode.Companion.Accepted
-import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -30,10 +29,7 @@ fun Route.statusRoute() {
             }
 
             post {
-                val request = call.receiveOrNull<StatusRequest>() ?: run {
-                    call.respond(BadRequest)
-                    return@post
-                }
+                val request = call.receiveOrNull<StatusRequest>() ?: return@post
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!

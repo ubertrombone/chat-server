@@ -2,13 +2,11 @@ package com.joshrose.routes
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.joshrose.Constants.INCORRECT_CREDS
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AuthenticationRequest
 import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateAuth
-import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -27,10 +25,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
         }
 
         post {
-            val user = call.receiveOrNull<AuthenticationRequest>() ?: run {
-                call.respond(BadRequest, INCORRECT_CREDS)
-                return@post
-            }
+            val user = call.receiveOrNull<AuthenticationRequest>() ?: return@post
 
             val token = async {
                 JWT.create().apply {

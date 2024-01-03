@@ -23,10 +23,7 @@ fun Route.registerRoute(issuer: String, secret: String) {
         }
 
         post {
-            val request = call.receiveOrNull<AccountRequest>() ?: run {
-                call.respond(BadRequest)
-                return@post
-            }
+            val request = call.receiveOrNull<AccountRequest>() ?: return@post
 
             dao.addNewUser(
                 username = request.username,
