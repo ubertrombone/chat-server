@@ -2,6 +2,7 @@ package com.joshrose.routes
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.joshrose.Constants.INCORRECT_CREDS
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AuthenticationRequest
 import com.joshrose.util.receiveOrNull
@@ -27,7 +28,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
 
         post {
             val user = call.receiveOrNull<AuthenticationRequest>() ?: run {
-                call.respond(BadRequest)
+                call.respond(BadRequest, INCORRECT_CREDS)
                 return@post
             }
 
