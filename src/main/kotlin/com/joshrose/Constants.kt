@@ -31,4 +31,5 @@ object Constants {
     const val GROUP_NAME_TOO_SHORT = "Name must contain at least 1 character!"
     const val GROUP_NAME_INVALID_CHARS = "Name may only include letters or numbers!"
     const val UNAUTHORIZED = "Token is not valid or has expired"
+    const val UNKNOWN_ERROR = "An unknown error occurred"
 }
