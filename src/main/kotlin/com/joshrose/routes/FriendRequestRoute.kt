@@ -8,7 +8,6 @@ import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
-import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Conflict
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -54,7 +53,7 @@ fun Route.friendRequestRoute() {
                         if (friendList.contains(request)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
                         else {
                             friendRequestDao.addNewFriendRequest(requesterUsername = username, toUsername = request)
-                            call.respond(Accepted, "Request Sent!")
+                            call.respond(OK, "Request Sent!")
                         }
                     }
                 }

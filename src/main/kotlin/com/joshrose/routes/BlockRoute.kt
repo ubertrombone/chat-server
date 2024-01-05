@@ -5,7 +5,6 @@ import com.joshrose.Constants.USER_NOT_BLOCKED
 import com.joshrose.plugins.dao
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
-import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Conflict
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -44,7 +43,7 @@ fun Route.blockRoute() {
                             blockedList = blockedList.plus(otherUser)
                         )
                     )
-                    call.respond(Accepted, "${otherUser.name} is blocked!")
+                    call.respond(OK, "${otherUser.name} is blocked!")
                 }
             }
 
@@ -62,7 +61,7 @@ fun Route.blockRoute() {
                             blockedList = blockedList.minus(otherUser)
                         )
                     )
-                    call.respond(Accepted, "${otherUser.name} is unblocked!")
+                    call.respond(OK, "${otherUser.name} is unblocked!")
                 }
             }
         }

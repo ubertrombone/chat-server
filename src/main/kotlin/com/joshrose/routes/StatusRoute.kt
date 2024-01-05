@@ -5,7 +5,6 @@ import com.joshrose.requests.StatusRequest
 import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateStatus
-import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -39,7 +38,7 @@ fun Route.statusRoute() {
                         status = request.status
                     )
                 )
-                call.respond(Accepted, "Status updated!")
+                call.respond(OK, "Status updated!")
             }
         }
     }

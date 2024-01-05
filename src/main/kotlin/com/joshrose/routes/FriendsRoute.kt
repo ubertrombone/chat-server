@@ -5,7 +5,6 @@ import com.joshrose.Constants.FRIEND_DOESNT_EXIST
 import com.joshrose.plugins.dao
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
-import io.ktor.http.HttpStatusCode.Companion.Accepted
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Conflict
 import io.ktor.http.HttpStatusCode.Companion.OK
@@ -49,7 +48,7 @@ fun Route.friendsRoute() {
                             friendList = friendList.plus(otherUser)
                         )
                     )
-                    call.respond(Accepted, "${otherUser.name} added!")
+                    call.respond(OK, "${otherUser.name} added!")
                 }
             }
 
@@ -67,7 +66,7 @@ fun Route.friendsRoute() {
                             friendList = friendList.minus(otherUser)
                         )
                     )
-                    call.respond(Accepted, "${otherUser.name} removed!")
+                    call.respond(OK, "${otherUser.name} removed!")
                 }
             }
         }
