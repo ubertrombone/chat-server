@@ -69,6 +69,7 @@ fun Route.settingsRoute() {
                         lastOnline = Clock.System.now()
                     )
                 )
+                call.respond(OK, "Cache setting updated")
             }
 
             post("/delete") {
