@@ -10,7 +10,6 @@ import com.joshrose.Constants.INVALID_CHARS_USERNAME
 import com.joshrose.Constants.PASSWORD_LONG
 import com.joshrose.Constants.PASSWORD_REQUIRED_CHARS
 import com.joshrose.Constants.PASSWORD_SHORT
-import com.joshrose.Constants.STATUS_TOO_LONG
 import com.joshrose.Constants.UNKNOWN_ERROR
 import com.joshrose.Constants.USERNAME_DOESNT_EXIST
 import com.joshrose.Constants.USERNAME_EXISTS
@@ -37,7 +36,7 @@ suspend inline fun <reified T: Any> ApplicationCall.receiveOrNull(): T? =
                     any {
                         it == PASSWORD_SHORT || it == USERNAME_TOO_LONG || it == INVALID_CHARS_USERNAME ||
                             it == PASSWORD_LONG || it == PASSWORD_REQUIRED_CHARS || it == INVALID_CHARS_PASSWORD ||
-                            it == USERNAME_DOESNT_EXIST || it == STATUS_TOO_LONG || it == USERNAME_TOO_SHORT ||
+                            it == USERNAME_DOESNT_EXIST || it == USERNAME_TOO_SHORT ||
                             it == GROUP_NAME_TOO_SHORT || it == GROUP_NAME_TOO_LONG || it == GROUP_NAME_INVALID_CHARS
                     } -> respond(UnprocessableEntity, joinToString())
                     contains(INCORRECT_CREDS) -> respond(BadRequest, joinToString())

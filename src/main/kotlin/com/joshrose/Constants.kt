@@ -20,8 +20,6 @@ object Constants {
     const val FRIEND_DOESNT_EXIST = "User not in friend list!"
     const val USER_ALREADY_BLOCKED = "User already blocked!"
     const val USER_NOT_BLOCKED = "User not in blocked list!"
-    const val MAX_STATUS_LENGTH = 256
-    const val STATUS_TOO_LONG = "Status can't be more than $MAX_STATUS_LENGTH characters!"
     const val FRIEND_REQUEST_EXISTS = "A friend request has already been sent!"
     const val FRIEND_REQUEST_DOESNT_EXIST = "No such friend request!"
     const val REQUEST_ALREADY_RECEIVED = "Request exists; check your requests!"
