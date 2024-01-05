@@ -1,5 +1,6 @@
 package com.joshrose.routes
 
+import com.joshrose.Constants.INCORRECT_PASSWORD
 import com.joshrose.plugins.archiveDao
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
@@ -9,7 +10,6 @@ import com.joshrose.security.getHashWithSalt
 import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.util.validateUpdateNewUsername
-import com.joshrose.util.validateUpdatePassword
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.server.application.*
@@ -19,7 +19,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Clock.System
 
 fun Route.settingsRoute() {
     route("/settings") {
@@ -34,9 +34,10 @@ fun Route.settingsRoute() {
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
-                validateUpdatePassword(username, request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
-                    user = user.copy(password = getHashWithSalt(request.newPassword), lastOnline = Clock.System.now())
-                ).also { call.respond(OK, "Password reset successfully!") }
+                INCORRECT_PASSWORD.takeIf { !dao.checkPassword(username, request.oldPassword) }
+                    ?.let { call.respond(BadRequest, it) }
+                    ?: dao.editUser(user = user.copy(password = getHashWithSalt(request.newPassword), lastOnline = System.now()))
+                        .also { call.respond(OK, "Password reset successfully!") }
             }
 
             post("/updateuser") {
@@ -47,7 +48,7 @@ fun Route.settingsRoute() {
                 validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
                     user = user.copy(
                         username = request.newUsername,
-                        lastOnline = Clock.System.now()
+                        lastOnline = System.now()
                     )
                 ).also { call.respond(OK, "Username changed: ${request.newUsername}") }
             }
@@ -66,7 +67,7 @@ fun Route.settingsRoute() {
                 dao.editUser(
                     user = user.copy(
                         cache = cache,
-                        lastOnline = Clock.System.now()
+                        lastOnline = System.now()
                     )
                 )
                 call.respond(OK, "Cache setting updated")
