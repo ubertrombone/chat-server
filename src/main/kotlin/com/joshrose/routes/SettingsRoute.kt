@@ -46,10 +46,7 @@ fun Route.settingsRoute() {
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
                 validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
-                    user = user.copy(
-                        username = request.newUsername,
-                        lastOnline = System.now()
-                    )
+                    user = user.copy(username = request.newUsername, lastOnline = System.now())
                 ).also { call.respond(OK, "Username changed: ${request.newUsername}") }
             }
 
