@@ -3,7 +3,6 @@ package com.joshrose.plugins
 import com.joshrose.dao.*
 import com.joshrose.routes.*
 import com.joshrose.security.getHashWithSalt
-import com.joshrose.util.Username
 import com.joshrose.util.toUsername
 import io.ktor.server.application.*
 import io.ktor.server.routing.*
@@ -18,7 +17,7 @@ val dao: DAOUser = DAOUserImpl().apply {
                 password = getHashWithSalt("p@ssw0rd"),
                 isOnline = true,
                 lastOnline = Clock.System.now(),
-                friendList = emptySet<Username>(),
+                friendList = emptySet(),
                 blockedList = emptySet(),
                 status = null,
                 cache = true

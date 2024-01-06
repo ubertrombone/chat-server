@@ -30,18 +30,19 @@ class ChatServer {
         dao.editUser(user = user.copy(isOnline = false, lastOnline = Clock.System.now()))
 
         groupChatDao.allGroupChats()
-            .filter { groupChat -> groupChat.members.contains(connection.name) }
+            .filter { groupChat -> groupChat.members.contains(user.id) }
             .forEach { groupChat -> leaveGroup(groupChat, connection) }
     }
 
     suspend fun leaveGroup(groupChat: GroupChat?, connection: Connection): SimpleResponse =
         groupChat?.let { group ->
-            with(group.members.minus(connection.name)) {
+            val id = dao.userID(connection.name)!!
+            with(group.members.minus(id)) {
                 if (isEmpty()) groupChatDao.deleteGroupChat(group.name)
                 else {
                     groupChatDao.editGroupChat(groupChat = group.copy(members = this))
                     connections
-                        .filter { contains(it.name) }
+                        .filter { contains(dao.userID(it.name)) }
                         .forEach { it.session.send(Json.encodeToString("${connection.name} has left")) }
                 }
                 SimpleResponse(true, "${connection.name} removed from ${group.name}")
@@ -71,7 +72,7 @@ class ChatServer {
                 members.isEmpty() -> SimpleResponse(false, "Group has no members")
                 else -> {
                     connections
-                        .filter { members.contains(it.name) }
+                        .filter { members.contains(dao.userID(it.name)) }
                         .forEach { it.session.send(Json.encodeToString(message)) }
                     SimpleResponse(true, "Sent successfully")
                 }
