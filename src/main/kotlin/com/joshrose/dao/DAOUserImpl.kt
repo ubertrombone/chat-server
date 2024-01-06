@@ -12,6 +12,7 @@ import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
 import com.joshrose.util.toUsernameOrNull
+import kotlinx.datetime.Clock.System
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
@@ -106,6 +107,21 @@ class DAOUserImpl : DAOUser {
             it[status] = user.status
             it[cache] = user.cache
         } > 0
+    }
+
+    override suspend fun updateUsername(oldUsername: Username, newUsername: Username): Boolean = dbQuery {
+        with (user(oldUsername)!!) {
+            Users.update({ Users.username eq username.name }) {
+                it[username] = newUsername.name
+                it[password] = this@with.password
+                it[isOnline] = this@with.isOnline
+                it[lastOnline] = System.now().toJavaInstant()
+                it[friendList] = this@with.friendList.joinToString(";") { name -> name.name }
+                it[blockedList] = this@with.blockedList.joinToString(";") { name -> name.name }
+                it[status] = this@with.status
+                it[cache] = this@with.cache
+            } > 0
+        }
     }
 
     override suspend fun deleteUser(username: Username): Boolean = dbQuery {
