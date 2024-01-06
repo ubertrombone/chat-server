@@ -21,6 +21,8 @@ interface DAOUser {
     ): User?
     suspend fun editUser(user: User): Boolean
     suspend fun updateUsername(oldUsername: Username, newUsername: Username): Boolean
+    suspend fun updateFriendsList(oldUsername: Username, newUsername: Username): Boolean
+    suspend fun updateBlockedLists(oldUsername: Username, newUsername: Username): Boolean
     suspend fun deleteUser(username: Username): Boolean
     suspend fun usernameExists(username: Username): Boolean
     suspend fun checkPassword(username: Username, passwordToCheck: String): Boolean

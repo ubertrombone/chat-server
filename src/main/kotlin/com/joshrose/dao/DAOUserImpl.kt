@@ -12,6 +12,10 @@ import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
 import com.joshrose.util.toUsernameOrNull
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.datetime.Clock.System
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
@@ -122,6 +126,31 @@ class DAOUserImpl : DAOUser {
                 it[cache] = this@with.cache
             } > 0
         }
+    }
+
+    override suspend fun updateFriendsList(oldUsername: Username, newUsername: Username): Boolean = dbQuery {
+        CoroutineScope(Dispatchers.Default).async {
+            user(newUsername)!!.friendList
+                .map { async { user(it)!! } }.awaitAll()
+                .map {
+                    async {
+                        editUser(user = it.copy(friendList = it.friendList.minus(oldUsername).plus(newUsername)))
+                    }
+                }.awaitAll()
+        }.await().all { it }
+    }
+
+    override suspend fun updateBlockedLists(oldUsername: Username, newUsername: Username): Boolean = dbQuery {
+        CoroutineScope(Dispatchers.Default).async {
+            allUsers()
+                .map {
+                    async {
+                        if (it.blockedList.contains(oldUsername))
+                            editUser(user = it.copy(blockedList = it.blockedList.plus(newUsername).minus(oldUsername)))
+                        else true
+                    }
+                }.awaitAll()
+        }.await().all { it }
     }
 
     override suspend fun deleteUser(username: Username): Boolean = dbQuery {
