@@ -3,6 +3,7 @@ package com.joshrose.plugins
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.joshrose.Constants.UNAUTHORIZED
+import com.joshrose.util.toUsername
 import io.ktor.http.HttpStatusCode.Companion.Unauthorized
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -24,7 +25,7 @@ fun Application.configureSecurity() {
             )
             validate { credential ->
                 with(credential.payload) {
-                    if (getClaim("username").asString() != "") JWTPrincipal(this) else null
+                    dao.user(getClaim("username").asString().toUsername())?.let { JWTPrincipal(this) }
                 }
             }
             challenge { _, _ ->
