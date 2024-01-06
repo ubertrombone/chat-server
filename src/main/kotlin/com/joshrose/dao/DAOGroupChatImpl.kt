@@ -3,9 +3,6 @@ package com.joshrose.dao
 import com.joshrose.dao.DatabaseFactory.dbQuery
 import com.joshrose.models.GroupChat
 import com.joshrose.models.GroupChats
-import com.joshrose.util.Username
-import com.joshrose.util.toUsername
-import com.joshrose.util.toUsernameOrNull
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
@@ -14,15 +11,17 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 class DAOGroupChatImpl : DAOGroupChat {
     private fun resultRowToChatGroup(row: ResultRow) = GroupChat(
+        id = row[GroupChats.id],
         name = row[GroupChats.name],
-        creator = row[GroupChats.creator].toUsername(),
+        creator = row[GroupChats.creator],
         createdDate = row[GroupChats.createdDate].toKotlinInstant(),
         members = row[GroupChats.members]
             ?.split(";")
-            ?.mapNotNull { it.toUsernameOrNull() }
+            ?.mapNotNull { it.toIntOrNull() }
             ?.toSet()
             ?: emptySet(),
     )
+
     override suspend fun allGroupChats(): Set<GroupChat> = dbQuery {
         GroupChats.selectAll().map(::resultRowToChatGroup).toSet()
     }
@@ -40,15 +39,15 @@ class DAOGroupChatImpl : DAOGroupChat {
 
     override suspend fun addNewGroupChat(
         name: String,
-        creator: Username,
+        creator: Int,
         createdDate: Instant,
-        members: Set<Username>
+        members: Set<Int>
     ): GroupChat? = dbQuery {
         val insertStatement = GroupChats.insert {
             it[GroupChats.name] = name
-            it[GroupChats.creator] = creator.name
+            it[GroupChats.creator] = creator
             it[GroupChats.createdDate] = createdDate.toJavaInstant()
-            it[GroupChats.members] = members.joinToString(";") { name -> name.name }
+            it[GroupChats.members] = members.joinToString(";") { id -> id.toString() }
         }
         insertStatement.resultedValues?.singleOrNull()?.let(::resultRowToChatGroup)
     }
@@ -56,9 +55,9 @@ class DAOGroupChatImpl : DAOGroupChat {
     override suspend fun editGroupChat(groupChat: GroupChat): Boolean = dbQuery {
         GroupChats.update({ GroupChats.name eq groupChat.name }) {
             it[name] = groupChat.name
-            it[creator] = groupChat.creator.name
+            it[creator] = groupChat.creator
             it[createdDate] = groupChat.createdDate.toJavaInstant()
-            it[members] = groupChat.members.joinToString(";") { name -> name.name }
+            it[members] = groupChat.members.joinToString(";") { id -> id.toString() }
         } > 0
     }
 

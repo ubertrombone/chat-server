@@ -6,17 +6,19 @@ import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.javatime.timestamp
 
 data class User(
+    val id: Int,
     val password: String,
     val username: Username,
     val isOnline: Boolean,
     val lastOnline: Instant,
-    val friendList: Set<Username>,
-    val blockedList: Set<Username>,
+    val friendList: Set<Int>,
+    val blockedList: Set<Int>,
     val status: String?,
     val cache: Boolean
 )
 
 object Users: Table() {
+    val id = integer("id").autoIncrement()
     val password = varchar("password", 500)
     val username = varchar("username", 24)
     val isOnline = bool("isOnline")
@@ -26,5 +28,5 @@ object Users: Table() {
     val status = varchar("status", 256).nullable()
     val cache = bool("cache")
 
-    override val primaryKey = PrimaryKey(username)
+    override val primaryKey = PrimaryKey(id)
 }

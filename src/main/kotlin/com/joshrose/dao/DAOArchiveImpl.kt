@@ -12,6 +12,7 @@ import org.jetbrains.exposed.sql.*
 
 class DAOArchiveImpl : DAOArchive {
     private fun resultRowToUser(row: ResultRow) = Archive(
+        id = row[Archives.id],
         username = row[Archives.username].toUsername(),
         lastOnline = row[Archives.lastOnline].toKotlinInstant(),
         status = row[Archives.status]

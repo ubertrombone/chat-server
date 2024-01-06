@@ -1,7 +1,6 @@
 package com.joshrose.dao
 
 import com.joshrose.models.GroupChat
-import com.joshrose.util.Username
 import kotlinx.datetime.Instant
 
 interface DAOGroupChat {
@@ -10,9 +9,9 @@ interface DAOGroupChat {
     suspend fun groupChatNameExists(name: String): Boolean
     suspend fun addNewGroupChat(
         name: String,
-        creator: Username,
+        creator: Int,
         createdDate: Instant,
-        members: Set<Username>
+        members: Set<Int>
     ): GroupChat?
     suspend fun editGroupChat(groupChat: GroupChat): Boolean
     suspend fun deleteGroupChat(name: String): Boolean
