@@ -2,6 +2,7 @@ package com.joshrose.routes
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.joshrose.Constants.TOKEN_VALIDITY
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AccountRequest
 import com.joshrose.security.getHashWithSalt
@@ -38,7 +39,7 @@ fun Route.registerRoute(issuer: String, secret: String) {
                 val token = JWT.create().apply {
                     withIssuer(issuer)
                     withClaim("username", request.username.name)
-                    withExpiresAt(Date(System.currentTimeMillis() + 600000))
+                    withExpiresAt(Date(System.currentTimeMillis() + TOKEN_VALIDITY))
                 }.sign(Algorithm.HMAC256(secret))
                 call.respond(OK, token)
             } ?: call.respond(BadRequest, "An unknown error occurred")

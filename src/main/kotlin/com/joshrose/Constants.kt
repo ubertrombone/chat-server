@@ -30,4 +30,5 @@ object Constants {
     const val GROUP_NAME_INVALID_CHARS = "Name may only include letters or numbers!"
     const val UNAUTHORIZED = "Token is not valid or has expired"
     const val UNKNOWN_ERROR = "An unknown error occurred"
+    const val TOKEN_VALIDITY = 600000
 }

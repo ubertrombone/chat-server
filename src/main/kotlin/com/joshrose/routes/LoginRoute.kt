@@ -2,6 +2,7 @@ package com.joshrose.routes
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.joshrose.Constants.TOKEN_VALIDITY
 import com.joshrose.plugins.dao
 import com.joshrose.requests.AuthenticationRequest
 import com.joshrose.util.receiveOrNull
@@ -31,7 +32,7 @@ fun Route.loginRoute(issuer: String, secret: String) {
                 JWT.create().apply {
                     withIssuer(issuer)
                     withClaim("username", user.username.name)
-                    withExpiresAt(Date(System.currentTimeMillis() + 600000))
+                    withExpiresAt(Date(System.currentTimeMillis() + TOKEN_VALIDITY))
                 }.sign(Algorithm.HMAC256(secret))
             }
             async {
