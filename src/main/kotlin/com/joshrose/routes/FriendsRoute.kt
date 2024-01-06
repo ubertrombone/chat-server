@@ -28,14 +28,14 @@ fun Route.friendsRoute() {
             get {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val blockList = async { dao.user(user)!!.blockedList }
-                val friendList = async { dao.friends(user) }
+                val friendList = async { dao.getFriends(user) }
                 val bAwait = blockList.await()
-                val fAwait = friendList.await().filterNot { bAwait.contains(it.username) }.toSet()
+                val fAwait = friendList.await().filterNot { bAwait.contains(dao.userID(it.username)) }.toSet()
                 call.respond(OK, fAwait)
             }
 
             post("/add") {
-                val (otherUser, username) = receiveUsernames()
+                val (otherUser, username) = receiveIds()
                 if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
@@ -48,12 +48,12 @@ fun Route.friendsRoute() {
                             friendList = friendList.plus(otherUser)
                         )
                     )
-                    call.respond(OK, "${otherUser.name} added!")
+                    call.respond(OK, "${dao.user(otherUser)!!.username.name} added!")
                 }
             }
 
             post("/remove") {
-                val (otherUser, username) = receiveUsernames()
+                val (otherUser, username) = receiveIds()
                 if (otherUser == null) return@post
 
                 val user = dao.user(username)!!
@@ -66,7 +66,7 @@ fun Route.friendsRoute() {
                             friendList = friendList.minus(otherUser)
                         )
                     )
-                    call.respond(OK, "${otherUser.name} removed!")
+                    call.respond(OK, "${dao.user(otherUser)!!.username.name} removed!")
                 }
             }
         }

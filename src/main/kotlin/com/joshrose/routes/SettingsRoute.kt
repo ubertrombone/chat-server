@@ -45,9 +45,10 @@ fun Route.settingsRoute() {
 
                 val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 val user = dao.user(username)!!
-                validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: dao.editUser(
-                    user = user.copy(username = request.newUsername, lastOnline = System.now())
-                ).also { call.respond(OK, "Username changed: ${request.newUsername}") }
+                validateUpdateNewUsername(request)?.let { call.respond(BadRequest, it) } ?: run {
+                    dao.editUser(user = user.copy(username = request.newUsername, lastOnline = System.now()))
+                    call.respond(OK, "Username changed: ${request.newUsername}")
+                }
             }
 
             get("/cache") {
@@ -79,7 +80,7 @@ fun Route.settingsRoute() {
                     // because the user will just appear offline forever
                     val user = dao.user(username)!!
                     val archiveUser = async { archiveDao.addToArchives(user) }
-                    val deleteRequest = async { friendRequestDao.deleteUserFromRequests(username) }
+                    val deleteRequest = async { friendRequestDao.deleteUserFromRequests(user.id) }
                     val deleteUser = async { dao.deleteUser(username) }
                     awaitAll(archiveUser, deleteRequest, deleteUser)
                     call.respond(OK, "Account Deleted!")

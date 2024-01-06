@@ -14,7 +14,7 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.datetime.Clock
+import kotlinx.datetime.Clock.System
 
 fun Route.blockRoute() {
     route("/block") {
@@ -30,38 +30,38 @@ fun Route.blockRoute() {
             }
 
             post {
-                val (otherUser, username) = receiveUsernames()
-                if (otherUser == null) return@post
+                val (otherUsername, username) = receiveIds()
+                if (otherUsername == null) return@post
 
                 val user = dao.user(username)!!
                 val blockedList = user.blockedList
-                if (blockedList.contains(otherUser)) call.respond(Conflict, USER_ALREADY_BLOCKED)
+                if (blockedList.contains(otherUsername)) call.respond(Conflict, USER_ALREADY_BLOCKED)
                 else {
                     dao.editUser(
                         user = user.copy(
-                            lastOnline = Clock.System.now(),
-                            blockedList = blockedList.plus(otherUser)
+                            lastOnline = System.now(),
+                            blockedList = blockedList.plus(otherUsername)
                         )
                     )
-                    call.respond(OK, "${otherUser.name} is blocked!")
+                    call.respond(OK, "${dao.user(otherUsername)!!.username.name} is blocked!")
                 }
             }
 
             post("/unblock") {
-                val (otherUser, username) = receiveUsernames()
-                if (otherUser == null) return@post
+                val (otherUsername, username) = receiveIds()
+                if (otherUsername == null) return@post
 
                 val user = dao.user(username)!!
                 val blockedList = user.blockedList
-                if (!blockedList.contains(otherUser)) call.respond(BadRequest, USER_NOT_BLOCKED)
+                if (!blockedList.contains(otherUsername)) call.respond(BadRequest, USER_NOT_BLOCKED)
                 else {
                     dao.editUser(
                         user = user.copy(
-                            lastOnline = Clock.System.now(),
-                            blockedList = blockedList.minus(otherUser)
+                            lastOnline = System.now(),
+                            blockedList = blockedList.minus(otherUsername)
                         )
                     )
-                    call.respond(OK, "${otherUser.name} is unblocked!")
+                    call.respond(OK, "${dao.user(otherUsername)!!.username.name} is unblocked!")
                 }
             }
         }

@@ -28,22 +28,21 @@ fun Route.friendRequestRoute() {
         authenticate {
             get("/sent_friend_requests") {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val sentRequests = friendRequestDao.sentFriendRequests(user)
+                val sentRequests = friendRequestDao.sentFriendRequests(dao.userID(user)!!)
                 call.respond(OK, sentRequests)
             }
 
             get("/received_friend_requests") {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val receivedRequests = friendRequestDao.receivedFriendRequests(user)
+                val receivedRequests = friendRequestDao.receivedFriendRequests(dao.userID(user)!!)
                 call.respond(OK, receivedRequests)
             }
 
             post {
-                val (request, username) = receiveUsernames()
+                val (request, username) = receiveIds()
                 if (request == null) return@post
 
                 val friendList = dao.user(username)!!.friendList
-
                 when {
                     friendRequestDao.friendRequestExists(username, request) ->
                         call.respond(Conflict, FRIEND_REQUEST_EXISTS)
@@ -52,7 +51,7 @@ fun Route.friendRequestRoute() {
                     else -> {
                         if (friendList.contains(request)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
                         else {
-                            friendRequestDao.addNewFriendRequest(requesterUsername = username, toUsername = request)
+                            friendRequestDao.addNewFriendRequest(username, request)
                             call.respond(OK, "Request Sent!")
                         }
                     }
@@ -60,7 +59,7 @@ fun Route.friendRequestRoute() {
             }
 
             post("/cancel_request") {
-                val (request, username) = receiveUsernames()
+                val (request, username) = receiveIds()
                 if (request == null) return@post
 
                 if (friendRequestDao.removeFriendRequest(username, request))

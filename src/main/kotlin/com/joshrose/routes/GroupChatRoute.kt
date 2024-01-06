@@ -1,5 +1,6 @@
 package com.joshrose.routes
 
+import com.joshrose.plugins.dao
 import com.joshrose.plugins.groupChatDao
 import com.joshrose.requests.GroupChatNameRequest
 import com.joshrose.util.receiveOrNull
@@ -33,7 +34,7 @@ fun Route.groupChatRoute() {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
                 groupChatDao.addNewGroupChat(
                     name = request.name,
-                    creator = user,
+                    creator = dao.userID(user)!!,
                     createdDate = Clock.System.now(),
                     members = emptySet()
                 )
