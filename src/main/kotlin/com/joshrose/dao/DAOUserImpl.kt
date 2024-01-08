@@ -8,7 +8,6 @@ import com.joshrose.models.User
 import com.joshrose.models.Users
 import com.joshrose.models.Users.id
 import com.joshrose.models.Users.username
-import com.joshrose.plugins.archiveDao
 import com.joshrose.security.checkHashForPassword
 import com.joshrose.util.Username
 import com.joshrose.util.toUsername
@@ -70,10 +69,6 @@ class DAOUserImpl : DAOUser {
             .map(::resultRowToUser)
             .singleOrNull()!!
             .friendList
-            .onEach {
-                if (archiveDao.userInArchive(user(it)!!.username))
-                    with (user(username)!!) { editUser(copy(friendList = friendList.minus(it))) }
-            }
             .mapNotNull {
                 user(it)?.let { user ->
                     FriendInfo(
