@@ -12,7 +12,6 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 
-// TODO: Also update other daos
 fun Route.usersRoute() {
     route("/users") {
         authenticate {
