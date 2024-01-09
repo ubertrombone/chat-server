@@ -18,23 +18,23 @@ class DAOFriendRequestImpl : DAOFriendRequest {
     }
 
     override suspend fun sentFriendRequests(requesterId: Int): Set<FriendRequest> = dbQuery {
-        FriendRequests.select { FriendRequests.requesterId eq requesterId }.map(::resultRowToFriendRequest).toSet()
+        FriendRequests.selectAll().where { FriendRequests.requesterId eq requesterId }.map(::resultRowToFriendRequest).toSet()
     }
 
     override suspend fun receivedFriendRequests(toId: Int): Set<FriendRequest> = dbQuery {
-        FriendRequests.select { FriendRequests.toId eq toId }.map(::resultRowToFriendRequest).toSet()
+        FriendRequests.selectAll().where { FriendRequests.toId eq toId }.map(::resultRowToFriendRequest).toSet()
     }
 
     override suspend fun friendRequest(id: Int): FriendRequest? = dbQuery {
-        FriendRequests
-            .select { FriendRequests.id eq id }
+        FriendRequests.selectAll()
+            .where { FriendRequests.id eq id }
             .map(::resultRowToFriendRequest)
             .singleOrNull()
     }
 
     override suspend fun friendRequestExists(requesterId: Int, toId: Int): Boolean = dbQuery {
-        FriendRequests
-            .select { (FriendRequests.requesterId eq requesterId) and (FriendRequests.toId eq toId) }
+        FriendRequests.selectAll()
+            .where { (FriendRequests.requesterId eq requesterId) and (FriendRequests.toId eq toId) }
             .count().toInt() > 0
     }
 

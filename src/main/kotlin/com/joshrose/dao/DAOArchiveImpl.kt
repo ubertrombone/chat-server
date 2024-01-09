@@ -8,7 +8,10 @@ import com.joshrose.util.Username
 import com.joshrose.util.toUsername
 import kotlinx.datetime.toJavaInstant
 import kotlinx.datetime.toKotlinInstant
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.lowerCase
+import org.jetbrains.exposed.sql.selectAll
 
 class DAOArchiveImpl : DAOArchive {
     private fun resultRowToUser(row: ResultRow) = Archive(
@@ -23,15 +26,15 @@ class DAOArchiveImpl : DAOArchive {
     }
 
     override suspend fun getArchivedUser(username: Username): Archive? = dbQuery {
-        Archives
-            .select { Archives.username.lowerCase() eq username.name.lowercase() }
+        Archives.selectAll()
+            .where { Archives.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()
     }
 
     override suspend fun userInArchive(username: Username): Boolean = dbQuery {
-        Archives
-            .select { Archives.username.lowerCase() eq username.name.lowercase() }
+        Archives.selectAll()
+            .where { Archives.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()?.let { true } ?: false
     }

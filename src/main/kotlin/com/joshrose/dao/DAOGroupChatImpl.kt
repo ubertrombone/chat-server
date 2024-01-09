@@ -27,14 +27,14 @@ class DAOGroupChatImpl : DAOGroupChat {
     }
 
     override suspend fun groupChat(name: String): GroupChat? = dbQuery {
-        GroupChats
-            .select { GroupChats.name eq name }
+        GroupChats.selectAll()
+            .where { GroupChats.name eq name }
             .map(::resultRowToChatGroup)
             .singleOrNull()
     }
 
     override suspend fun groupChatNameExists(name: String): Boolean = dbQuery {
-        GroupChats.select { GroupChats.name eq name }.count().toInt() > 0
+        GroupChats.selectAll().where { GroupChats.name eq name }.count().toInt() > 0
     }
 
     override suspend fun addNewGroupChat(
