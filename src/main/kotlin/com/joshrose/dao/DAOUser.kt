@@ -7,6 +7,7 @@ import kotlinx.datetime.Instant
 
 interface DAOUser {
     suspend fun allUsers(): List<User>
+    suspend fun queryUsers(query: String): Set<Username>
     suspend fun user(username: Username): User?
     suspend fun user(id: Int): User?
     suspend fun userID(username: Username): Int?

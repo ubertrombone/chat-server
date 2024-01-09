@@ -36,34 +36,44 @@ class DAOUserImpl : DAOUser {
         cache = row[Users.cache]
     )
 
+    private fun resultRowToUsername(row: ResultRow) = row[username].toUsername()
+
     override suspend fun allUsers(): List<User> = dbQuery {
         Users.selectAll().map(::resultRowToUser)
     }
 
+    override suspend fun queryUsers(query: String): Set<Username> = dbQuery {
+        Users.selectAll()
+            .where { username like query }
+            .map(::resultRowToUsername)
+            .filter { it.name.startsWith(query, ignoreCase = true) }
+            .toSet()
+    }
+
     override suspend fun user(username: Username): User? = dbQuery {
-        Users
-            .select { Users.username.lowerCase() eq username.name.lowercase() }
+        Users.selectAll()
+            .where { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()
     }
 
     override suspend fun user(id: Int): User? = dbQuery {
-        Users
-            .select { Users.id eq id }
+        Users.selectAll()
+            .where { Users.id eq id }
             .map(::resultRowToUser)
             .singleOrNull()
     }
 
     override suspend fun userID(username: Username): Int? = dbQuery {
-        Users
-            .select { Users.username.lowerCase() eq username.name.lowercase() }
+        Users.selectAll()
+            .where { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()?.id
     }
 
     override suspend fun getFriends(username: Username): Set<FriendInfo> = dbQuery {
-        Users
-            .select { Users.username.lowerCase() eq username.name.lowercase() }
+        Users.selectAll()
+            .where { Users.username.lowerCase() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()!!
             .friendList
@@ -121,12 +131,12 @@ class DAOUserImpl : DAOUser {
     }
 
     override suspend fun usernameExists(username: Username): Boolean = dbQuery {
-        Users.select { Users.username.lowerCase() eq username.name.lowercase() }.count().toInt() > 0
+        Users.selectAll().where { Users.username.lowerCase() eq username.name.lowercase() }.count().toInt() > 0
     }
 
     override suspend fun checkPassword(username: Username, passwordToCheck: String): Boolean = dbQuery {
-        val actualPassword = Users
-            .select { Users.username.lowerCase() eq username.name.lowercase() }
+        val actualPassword = Users.selectAll()
+            .where { Users.username.lowerCase<String>() eq username.name.lowercase() }
             .map(::resultRowToUser)
             .singleOrNull()?.password ?: return@dbQuery false
 
