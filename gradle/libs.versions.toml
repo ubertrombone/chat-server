@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.9.20"
 ktor = "2.3.6"
-exposed = "0.44.1"
+exposed = "0.46.0"
 sqlite = "3.44.0.0"
 logback = "1.4.11"
 codec = "1.16.0"
