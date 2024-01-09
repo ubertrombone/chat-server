@@ -17,7 +17,6 @@ import io.ktor.server.routing.*
 import kotlinx.coroutines.async
 import kotlinx.datetime.Clock
 
-@Suppress("DuplicatedCode")
 fun Route.friendsRoute() {
     route("/friends") {
         install(RequestValidation) {

@@ -20,7 +20,6 @@ fun String.toUsername() = Username(name = this)
 fun String.toUsernameOrNull() = runCatching { toUsername() }.getOrNull()
 
 // TODO: Get rid of GroupChat name checks too eventually
-@Suppress("DuplicatedCode")
 suspend inline fun <reified T: Any> ApplicationCall.receiveOrNull(): T? =
     runCatching { receive<T>() }.getOrElse { throwable ->
         if (throwable is RequestValidationException) {

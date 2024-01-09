@@ -1,5 +1,3 @@
-@file:Suppress("DuplicatedCode")
-
 package com.joshrose.dao
 
 import com.joshrose.dao.DatabaseFactory.dbQuery
