@@ -10,7 +10,6 @@ import io.ktor.server.auth.jwt.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 
 fun Route.usersRoute() {
     route("/users") {
@@ -19,10 +18,11 @@ fun Route.usersRoute() {
                 val queryRequest = call.receiveOrNull<String>() ?: return@post
 
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val friendsList = async { dao.getFriends(user).map { it.username }.toSet() }
+                val friends = async { dao.user(user)!!.friendList }
                 val queryResult = async { dao.queryUsers(queryRequest) }
-                // TODO: Should return only usernames not in user's friends list
-                val result = awaitAll(friendsList, queryResult).flatten().distinctBy { it }.toSet()
+                val f = friends.await()
+                val q = queryResult.await()
+                val result = q.mapNotNull { it.takeUnless { f.contains(dao.userID(it)) || it == user } }.toSet()
 
                 call.respond(OK, result)
             }
