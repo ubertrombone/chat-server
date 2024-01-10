@@ -53,6 +53,10 @@ class DAOFriendRequestImpl : DAOFriendRequest {
         } > 0
     }
 
+    override suspend fun removeFriendRequest(id: Int): Boolean = dbQuery {
+        FriendRequests.deleteWhere { FriendRequests.id eq id } > 0
+    }
+
     override suspend fun removeFriendRequest(requesterId: Int, toId: Int): Boolean = dbQuery {
         FriendRequests.deleteWhere { (FriendRequests.toId eq toId) and (FriendRequests.requesterId eq requesterId) } > 0
     }
