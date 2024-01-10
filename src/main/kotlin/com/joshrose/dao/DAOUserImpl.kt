@@ -44,7 +44,6 @@ class DAOUserImpl : DAOUser {
 
     override suspend fun queryUsers(query: String): Set<Username> = dbQuery {
         Users.selectAll()
-            .where { username like query }
             .map(::resultRowToUsername)
             .filter { it.name.startsWith(query, ignoreCase = true) }
             .toSet()
