@@ -4,8 +4,10 @@ import com.joshrose.Constants.FRIEND_ALREADY_ADDED
 import com.joshrose.Constants.FRIEND_REQUEST_DOESNT_EXIST
 import com.joshrose.Constants.FRIEND_REQUEST_EXISTS
 import com.joshrose.Constants.REQUEST_ALREADY_RECEIVED
+import com.joshrose.models.FriendRequest
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
+import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -64,6 +66,14 @@ fun Route.friendRequestRoute() {
 
                 if (friendRequestDao.removeFriendRequest(username, request))
                     call.respond(OK, "Request cancelled!")
+                else call.respond(BadRequest, FRIEND_REQUEST_DOESNT_EXIST)
+            }
+
+            post("/close_request") {
+                val request = call.receiveOrNull<FriendRequest>() ?: return@post
+
+                if (friendRequestDao.removeFriendRequest(request.id))
+                    call.respond(OK, "Request removed!")
                 else call.respond(BadRequest, FRIEND_REQUEST_DOESNT_EXIST)
             }
         }
