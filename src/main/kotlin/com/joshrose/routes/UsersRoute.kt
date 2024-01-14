@@ -17,12 +17,17 @@ fun Route.usersRoute() {
             post {
                 val queryRequest = call.receiveOrNull<String>() ?: return@post
 
-                val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val friends = async { dao.user(user)!!.friendList }
+                val username = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
+                val user = async { dao.user(username)!! }
                 val queryResult = async { dao.queryUsers(queryRequest) }
-                val f = friends.await()
+                val f = user.await()
                 val q = queryResult.await()
-                val result = q.mapNotNull { it.takeUnless { f.contains(dao.userID(it)) || it == user } }.toSet()
+                val result = q.mapNotNull { un ->
+                    un
+                        .takeUnless { f.friendList.contains(dao.userID(it)) }
+                        ?.takeUnless { f.blockedList.contains(dao.userID(it)) }
+                        ?.takeUnless { it == username }
+                }.toSet()
 
                 call.respond(OK, result)
             }
