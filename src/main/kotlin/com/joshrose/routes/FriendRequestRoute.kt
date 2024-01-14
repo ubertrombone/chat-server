@@ -5,6 +5,7 @@ import com.joshrose.Constants.FRIEND_REQUEST_DOESNT_EXIST
 import com.joshrose.Constants.FRIEND_REQUEST_EXISTS
 import com.joshrose.Constants.REQUEST_ALREADY_RECEIVED
 import com.joshrose.models.FriendRequest
+import com.joshrose.models.FriendRequestConverted
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
 import com.joshrose.util.receiveOrNull
@@ -30,13 +31,29 @@ fun Route.friendRequestRoute() {
         authenticate {
             get("/sent_friend_requests") {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val sentRequests = friendRequestDao.sentFriendRequests(dao.userID(user)!!)
+                val sentRequests = friendRequestDao
+                    .sentFriendRequests(dao.userID(user)!!)
+                    .map {
+                        FriendRequestConverted(
+                            id = it.id,
+                            requesterUsername = dao.user(it.requesterId)!!.username,
+                            toUsername = dao.user(it.toId)!!.username
+                        )
+                    }.toSet()
                 call.respond(OK, sentRequests)
             }
 
             get("/received_friend_requests") {
                 val user = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-                val receivedRequests = friendRequestDao.receivedFriendRequests(dao.userID(user)!!)
+                val receivedRequests = friendRequestDao
+                    .receivedFriendRequests(dao.userID(user)!!)
+                    .map {
+                        FriendRequestConverted(
+                            id = it.id,
+                            requesterUsername = dao.user(it.requesterId)!!.username,
+                            toUsername = dao.user(it.toId)!!.username
+                        )
+                    }.toSet()
                 call.respond(OK, receivedRequests)
             }
 
