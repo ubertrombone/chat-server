@@ -4,7 +4,6 @@ import com.joshrose.Constants.FRIEND_ALREADY_ADDED
 import com.joshrose.Constants.FRIEND_REQUEST_DOESNT_EXIST
 import com.joshrose.Constants.FRIEND_REQUEST_EXISTS
 import com.joshrose.Constants.REQUEST_ALREADY_RECEIVED
-import com.joshrose.models.FriendRequest
 import com.joshrose.models.FriendRequestConverted
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
@@ -87,7 +86,7 @@ fun Route.friendRequestRoute() {
             }
 
             post("/close_request") {
-                val request = call.receiveOrNull<FriendRequest>() ?: return@post
+                val request = call.receiveOrNull<FriendRequestConverted>() ?: return@post
 
                 if (friendRequestDao.removeFriendRequest(request.id))
                     call.respond(OK, "Request removed!")
