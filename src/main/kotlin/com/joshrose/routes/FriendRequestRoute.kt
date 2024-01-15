@@ -7,6 +7,7 @@ import com.joshrose.Constants.REQUEST_ALREADY_RECEIVED
 import com.joshrose.models.FriendRequestConverted
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.friendRequestDao
+import com.joshrose.util.addFriend
 import com.joshrose.util.receiveOrNull
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
@@ -74,6 +75,15 @@ fun Route.friendRequestRoute() {
                         }
                     }
                 }
+            }
+
+            post("/add") {
+                val request = call.receiveOrNull<FriendRequestConverted>() ?: return@post
+                call.addFriend(
+                    requesterUsername = request.requesterUsername,
+                    userUsername = request.toUsername,
+                    context = coroutineContext
+                )
             }
 
             post("/cancel_request") {

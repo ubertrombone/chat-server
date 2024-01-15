@@ -8,13 +8,19 @@ import com.joshrose.Constants.INCORRECT_CREDS
 import com.joshrose.Constants.UNKNOWN_ERROR
 import com.joshrose.Constants.USERNAME_DOESNT_EXIST
 import com.joshrose.Constants.USERNAME_EXISTS
+import com.joshrose.plugins.dao
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
 import io.ktor.http.HttpStatusCode.Companion.Conflict
+import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.http.HttpStatusCode.Companion.UnprocessableEntity
 import io.ktor.server.application.*
 import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.CoroutineContext
 
 fun String.toUsername() = Username(name = this)
 fun String.toUsernameOrNull() = runCatching { toUsername() }.getOrNull()
@@ -35,3 +41,21 @@ suspend inline fun <reified T: Any> ApplicationCall.receiveOrNull(): T? =
         } else respond(BadRequest, UNKNOWN_ERROR)
         null
     }
+
+suspend fun ApplicationCall.addFriend(requesterUsername: Username, userUsername: Username, context: CoroutineContext) = withContext(context) {
+    val requester = async {
+        dao.user(requesterUsername)!!.let {
+            dao.editUser(it.copy(friendList = it.friendList.plus(dao.userID(userUsername)!!)))
+        }
+    }
+
+    val user = async {
+        dao.user(userUsername)!!.let {
+            dao.editUser(it.copy(friendList = it.friendList.plus(dao.userID(requesterUsername)!!)))
+        }
+    }
+
+    if (awaitAll(requester, user).all { it })
+        respond(OK, "${requesterUsername.name} & ${userUsername.name} are now friends!")
+    else respond(BadRequest, UNKNOWN_ERROR)
+}

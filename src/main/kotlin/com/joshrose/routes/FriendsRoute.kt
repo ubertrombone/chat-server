@@ -2,7 +2,10 @@ package com.joshrose.routes
 
 import com.joshrose.Constants.FRIEND_ALREADY_ADDED
 import com.joshrose.Constants.FRIEND_DOESNT_EXIST
+import com.joshrose.Constants.UNKNOWN_ERROR
 import com.joshrose.plugins.dao
+import com.joshrose.plugins.friendRequestDao
+import com.joshrose.util.addFriend
 import com.joshrose.util.toUsername
 import com.joshrose.validations.validateUsernameExists
 import io.ktor.http.HttpStatusCode.Companion.BadRequest
@@ -39,15 +42,15 @@ fun Route.friendsRoute() {
 
                 val user = dao.user(username)!!
                 val friendList = user.friendList
-                if (friendList.contains(otherUser)) call.respond(Conflict, FRIEND_ALREADY_ADDED)
-                else {
-                    dao.editUser(
-                        user = user.copy(
-                            lastOnline = Clock.System.now(),
-                            friendList = friendList.plus(otherUser)
-                        )
+
+                when {
+                    friendList.contains(otherUser) -> call.respond(Conflict, FRIEND_ALREADY_ADDED)
+                    friendRequestDao.friendRequestExists(otherUser, username) -> call.addFriend(
+                        requesterUsername = dao.user(otherUser)!!.username,
+                        userUsername = dao.user(username)!!.username,
+                        context = coroutineContext
                     )
-                    call.respond(OK, "${dao.user(otherUser)!!.username.name} added!")
+                    else -> call.respond(BadRequest, UNKNOWN_ERROR)
                 }
             }
 
