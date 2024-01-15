@@ -18,7 +18,7 @@ import io.ktor.server.plugins.requestvalidation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.coroutines.async
-import kotlinx.datetime.Clock
+import kotlinx.coroutines.awaitAll
 
 fun Route.friendsRoute() {
     route("/friends") {
@@ -62,13 +62,18 @@ fun Route.friendsRoute() {
                 val friendList = user.friendList
                 if (!friendList.contains(otherUser)) call.respond(BadRequest, FRIEND_DOESNT_EXIST)
                 else {
-                    dao.editUser(
-                        user = user.copy(
-                            lastOnline = Clock.System.now(),
-                            friendList = friendList.minus(otherUser)
-                        )
-                    )
-                    call.respond(OK, "${dao.user(otherUser)!!.username.name} removed!")
+                    val firstName = dao.user(otherUser)!!
+                    val firstUser = async {
+                        dao.editUser(firstName.copy(friendList = friendList.minus(username)))
+                    }
+
+                    val thisUser = async {
+                        dao.editUser(user.copy(friendList = friendList.minus(otherUser)))
+                    }
+
+                    if (awaitAll(firstUser, thisUser).all { it })
+                        call.respond(OK, "${user.username.name} & ${firstName.username.name} are no longer friends")
+                    else call.respond(BadRequest, UNKNOWN_ERROR)
                 }
             }
         }
