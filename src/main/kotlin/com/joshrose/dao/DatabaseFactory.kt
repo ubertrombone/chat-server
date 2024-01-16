@@ -1,9 +1,6 @@
 package com.joshrose.dao
 
-import com.joshrose.models.Archives
-import com.joshrose.models.FriendRequests
-import com.joshrose.models.GroupChats
-import com.joshrose.models.Users
+import com.joshrose.models.*
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -25,7 +22,7 @@ object DatabaseFactory {
 
     private fun createSchema() {
         transaction {
-            SchemaUtils.create(Users, FriendRequests, GroupChats, Archives)
+            SchemaUtils.create(Users, FriendRequests, GroupChats, Archives, Chats, Caches)
         }
     }
 
