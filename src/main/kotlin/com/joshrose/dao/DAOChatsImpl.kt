@@ -22,9 +22,9 @@ class DAOChatsImpl : DAOChats {
         Chats.selectAll().where { Chats.id eq id }.map(::resultRowToChat).singleOrNull()
     }
 
-    override suspend fun chat(with: Int): Chat? = dbQuery {
+    override suspend fun chat(userOne: Int, userTwo: Int): Chat? = dbQuery {
         Chats.selectAll()
-            .where { (Chats.userOne eq with) or (Chats.userTwo eq with) }
+            .where { (Chats.userOne eq userOne) and (Chats.userTwo eq userTwo) }
             .map(::resultRowToChat)
             .singleOrNull()
     }
