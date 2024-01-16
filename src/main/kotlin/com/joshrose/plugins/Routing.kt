@@ -29,6 +29,8 @@ val dao: DAOUser = DAOUserImpl().apply {
 val friendRequestDao: DAOFriendRequest = DAOFriendRequestImpl()
 val groupChatDao: DAOGroupChat = DAOGroupChatImpl()
 val archiveDao: DAOArchive = DAOArchiveImpl()
+val chatDao: DAOChats = DAOChatsImpl()
+val cacheDao: DAOCache = DAOCacheImpl()
 
 fun Application.configureRouting() {
     val domain = environment.config.property("jwt.issuer").getString()
