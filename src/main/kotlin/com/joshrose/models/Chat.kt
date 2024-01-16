@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.Table
 
 @Serializable
-data class Chat(val with: Int)
+data class Chat(val id: Int, val with: Int)
 
 object Chats: Table() {
     val id = integer("id").autoIncrement()

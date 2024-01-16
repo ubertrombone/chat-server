@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.javatime.timestamp
 
 @Serializable
 data class Cache(
+    val id: Int,
     val message: String,
     val sender: Int,
     val timestamp: Instant,
