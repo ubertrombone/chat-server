@@ -43,12 +43,23 @@ class ChatServer {
                     groupChatDao.editGroupChat(groupChat = group.copy(members = this))
                     connections
                         .filter { contains(dao.userID(it.name)) }
-                        .forEach { it.session.send(Json.encodeToString("${connection.name} has left")) }
+                        .forEach { it.session.send(Json.encodeToString("${connection.name} has left!")) }
                 }
                 SimpleResponse(true, "${connection.name} removed from ${group.name}")
             }
         } ?: SimpleResponse(false, "Group not found")
 
+    suspend fun joinGroup(groupChat: GroupChat?, connection: Connection): SimpleResponse =
+        groupChat?.let { group ->
+            val id = dao.userID(connection.name)!!
+            with(group.members.plus(id)) {
+                groupChatDao.editGroupChat(group.copy(members = this))
+                connections
+                    .filter { contains(dao.userID(it.name)) }
+                    .forEach { it.session.send(Json.encodeToString("${connection.name} has joined!")) }
+            }
+            SimpleResponse(true, "${connection.name} added to ${group.name}")
+        } ?: SimpleResponse(false, "Group not found")
 
     suspend fun sendTo(message: ChatMessage): SimpleResponse =
         dao.user(message.recipientOrGroup.toUsername())?.let { username ->

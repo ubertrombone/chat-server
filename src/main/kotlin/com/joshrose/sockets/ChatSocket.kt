@@ -2,7 +2,7 @@ package com.joshrose.sockets
 
 import com.joshrose.Connection
 import com.joshrose.chat_model.ChatMessage
-import com.joshrose.chat_model.Functions
+import com.joshrose.chat_model.Functions.*
 import com.joshrose.plugins.groupChatDao
 import com.joshrose.util.toUsername
 import io.ktor.server.auth.*
@@ -50,10 +50,14 @@ suspend fun DefaultWebSocketSession.handleIncomingFrames(server: ChatServer, con
 
 suspend fun delegateMessageProcessing(message: ChatMessage, server: ChatServer, connection: Connection) =
     when (message.function) {
-        Functions.GROUP -> server.messageGroup(message)
-        Functions.INDIVIDUAL -> server.sendTo(message)
-        Functions.LEAVE -> {
+        GROUP -> server.messageGroup(message)
+        INDIVIDUAL -> server.sendTo(message)
+        LEAVE -> {
             val group = groupChatDao.groupChat(message.recipientOrGroup)
             server.leaveGroup(group, connection)
+        }
+        JOIN -> {
+            val group = groupChatDao.groupChat(message.recipientOrGroup)
+            server.joinGroup(group, connection)
         }
     }
