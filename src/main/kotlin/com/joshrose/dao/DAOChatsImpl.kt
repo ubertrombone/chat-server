@@ -3,10 +3,13 @@ package com.joshrose.dao
 import com.joshrose.dao.DatabaseFactory.dbQuery
 import com.joshrose.models.Chat
 import com.joshrose.models.Chats
+import com.joshrose.plugins.cacheDao
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 
 // TODO: Chats should be deleted when an account is deleted; consider other reasons
+//  2. When two users unfriend each other
+//  3. When a user blocks another
 class DAOChatsImpl : DAOChats {
     private fun resultRowToChat(row: ResultRow) = Chat(
         id = row[Chats.id],
@@ -44,6 +47,6 @@ class DAOChatsImpl : DAOChats {
     }
 
     override suspend fun deleteChat(id: Int): Boolean = dbQuery {
-        Chats.deleteWhere { this.id eq id } > 0
+        Chats.deleteWhere { this.id eq id }.also { cacheDao.deleteCacheOf(id) } > 0
     }
 }

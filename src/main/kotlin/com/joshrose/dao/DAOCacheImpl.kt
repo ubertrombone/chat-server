@@ -54,4 +54,8 @@ class DAOCacheImpl : DAOCache {
     override suspend fun deleteAllWhere(primaryUser: Int): Boolean = dbQuery  {
         Caches.deleteWhere { primaryUserReference eq primaryUser } > 0
     }
+
+    override suspend fun deleteCacheOf(chat: Int): Boolean = dbQuery {
+        Caches.deleteWhere { this.chat eq chat } > 0
+    }
 }
