@@ -47,6 +47,6 @@ class DAOChatsImpl : DAOChats {
     }
 
     override suspend fun deleteChat(id: Int): Boolean = dbQuery {
-        Chats.deleteWhere { this.id eq id }.also { cacheDao.deleteCacheOf(id) } > 0
+        Chats.deleteWhere { this.id eq id } > 0 && cacheDao.deleteCacheOf(id)
     }
 }
