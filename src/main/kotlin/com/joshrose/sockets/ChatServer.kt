@@ -6,7 +6,6 @@ import com.joshrose.models.GroupChat
 import com.joshrose.plugins.dao
 import com.joshrose.plugins.groupChatDao
 import com.joshrose.responses.SimpleResponse
-import com.joshrose.util.toUsername
 import io.ktor.websocket.*
 import kotlinx.datetime.Clock
 import kotlinx.serialization.encodeToString
@@ -62,17 +61,15 @@ class ChatServer {
         } ?: SimpleResponse(false, "Group not found")
 
     suspend fun sendTo(message: ChatMessage): SimpleResponse =
-        dao.user(message.recipientOrGroup.toUsername())?.let { username ->
-            if (username.isOnline) handleOnlineUser(message)
-            else SimpleResponse(false, "${username.username} is offline.")
-        } ?: SimpleResponse(false, "Could not find user: ${message.recipientOrGroup}")
+        connections.findConnectionByUsername(message.recipientOrGroup)?.let { handleOnlineUser(it, message) }
+            ?: SimpleResponse(false, "Could not find user: ${message.recipientOrGroup}")
 
-    private suspend fun handleOnlineUser(message: ChatMessage): SimpleResponse =
-        if (sendMessageToUser(message)) SimpleResponse(true, "Sent successfully")
+    private suspend fun handleOnlineUser(connection: Connection, message: ChatMessage): SimpleResponse =
+        if (sendMessageToUser(connection, message)) SimpleResponse(true, "Sent successfully")
         else SimpleResponse(false, "Failed to send the message")
 
-    private suspend fun sendMessageToUser(message: ChatMessage): Boolean =
-        connections.findConnectionByUsername(message.recipientOrGroup)?.session?.send(Json.encodeToString(message)) != null
+    private suspend fun sendMessageToUser(connection: Connection, message: ChatMessage): Boolean =
+        runCatching { connection.session.send(Json.encodeToString(message)) }.isSuccess
 
     private fun Set<Connection?>.findConnectionByUsername(username: String) = find { it?.name?.name == username }
 
