@@ -16,6 +16,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 const val CHAT_ROUTE = "/chat"
+val json = Json { prettyPrint = true }
 
 fun Route.chatSocket() {
     val server = ChatServer()
@@ -46,7 +47,7 @@ suspend fun DefaultWebSocketServerSession.handleIncomingFrames(server: ChatServe
         if (frame is Frame.Text) {
             val message = Json.decodeFromString<ChatMessage>(frame.readText())
             val response = delegateMessageProcessing(message, server, connection)
-            call.application.environment.log.info(Json.encodeToString(response))
+            call.application.environment.log.info("Chat response: ${json.encodeToString(response)}")
             if (!response.successful) {
                 val err = message.copy(function = ERROR, error = response.message)
                 connection.session.send(Json.encodeToString<ChatMessage>(err))
