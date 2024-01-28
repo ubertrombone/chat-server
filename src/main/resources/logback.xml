@@ -9,4 +9,8 @@
 	</root>
 	<logger name="org.eclipse.jetty" level="INFO"/>
 	<logger name="io.netty" level="INFO"/>
+	<logger name="org.sqlite.core.NativeDB" level="DEBUG"/>
+	<logger name="Exposed" level="DEBUG"/>
+	<logger name="i.k.s.p.c.ContentNegotiation" level="DEBUG"/>
+	<logger name="io.ktor.websocket.WebSocket" level="DEBUG"/>
 </configuration>
