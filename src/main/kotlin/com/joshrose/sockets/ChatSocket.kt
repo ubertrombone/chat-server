@@ -4,6 +4,7 @@ import com.joshrose.Connection
 import com.joshrose.chat_model.ChatMessage
 import com.joshrose.chat_model.Functions.*
 import com.joshrose.plugins.groupChatDao
+import com.joshrose.responses.SendChatResponse
 import com.joshrose.responses.SimpleResponse
 import com.joshrose.util.toUsername
 import io.ktor.server.auth.*
@@ -46,12 +47,10 @@ suspend fun DefaultWebSocketServerSession.handleIncomingFrames(server: ChatServe
     incoming.consumeEach { frame ->
         if (frame is Frame.Text) {
             val message = Json.decodeFromString<ChatMessage>(frame.readText())
-            val response = delegateMessageProcessing(message, server, connection)
-            call.application.environment.log.info("Chat response: ${json.encodeToString(response)}")
-            if (!response.successful) {
-                val err = message.copy(function = ERROR, error = response.message)
-                connection.session.send(Json.encodeToString<ChatMessage>(err))
-            }
+            val process = delegateMessageProcessing(message, server, connection)
+            call.application.environment.log.info("Chat response: ${json.encodeToString(process)}")
+            val response = SendChatResponse(successful = process.successful, message = message)
+            connection.session.send(Json.encodeToString<SendChatResponse>(response))
         }
     }
 
