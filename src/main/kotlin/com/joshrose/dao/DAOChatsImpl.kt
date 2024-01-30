@@ -27,7 +27,9 @@ class DAOChatsImpl : DAOChats {
 
     override suspend fun chat(userOne: Int, userTwo: Int): Chat? = dbQuery {
         Chats.selectAll()
-            .where { (Chats.userOne eq userOne) and (Chats.userTwo eq userTwo) }
+            .where {
+                ((Chats.userOne eq userOne) and (Chats.userTwo eq userTwo)) or ((Chats.userOne eq userTwo) and (Chats.userTwo eq userOne))
+            }
             .map(::resultRowToChat)
             .singleOrNull()
     }
