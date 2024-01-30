@@ -48,6 +48,7 @@ suspend fun DefaultWebSocketServerSession.handleIncomingFrames(server: ChatServe
         if (frame is Frame.Text) {
             val message = Json.decodeFromString<ChatMessage>(frame.readText())
             val process = delegateMessageProcessing(message, server, connection)
+            call.application.environment.log.info("Chat Message: ${json.encodeToString(message)}")
             call.application.environment.log.info("Chat response: ${json.encodeToString(process)}")
             val response = SendChatResponse(successful = process.successful, message = message)
             connection.session.send(Json.encodeToString<SendChatResponse>(response))
