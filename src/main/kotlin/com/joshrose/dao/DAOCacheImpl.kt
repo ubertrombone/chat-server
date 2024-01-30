@@ -16,6 +16,7 @@ class DAOCacheImpl : DAOCache {
         sender = row[Caches.sender],
         timestamp = row[Caches.timestamp].toKotlinInstant(),
         primaryUserReference = row[Caches.primaryUserReference],
+        error = row[Caches.error],
         chat = row[Caches.chat]
     )
 
@@ -27,11 +28,18 @@ class DAOCacheImpl : DAOCache {
         Caches.selectAll().where { Caches.id eq id }.map(::resultRowToCache).singleOrNull()
     }
 
-    override suspend fun add(message: String, sender: Int, primaryUser: Int, chat: Int): Cache? = dbQuery  {
+    override suspend fun add(
+        message: String,
+        sender: Int,
+        primaryUser: Int,
+        error: Int?,
+        chat: Int
+    ): Cache? = dbQuery  {
         Caches.insert {
             it[this.message] = message
             it[this.sender] = sender
             it[primaryUserReference] = primaryUser
+            it[this.error] = error
             it[this.chat] = chat
             it[timestamp] = Clock.System.now().toJavaInstant()
         }.resultedValues?.singleOrNull()?.let(::resultRowToCache)

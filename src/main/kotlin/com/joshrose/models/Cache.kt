@@ -12,6 +12,7 @@ data class Cache(
     val sender: Int,
     val timestamp: Instant,
     val primaryUserReference: Int,
+    val error: Int?,
     val chat: Int
 )
 
@@ -21,6 +22,7 @@ object Caches: Table() {
     val sender = integer("sender") references Users.id
     val timestamp = timestamp("timestamp")
     val primaryUserReference = integer("primaryUserReference") references Users.id
+    val error = integer("error").nullable()
     val chat = integer("chat") references Chats.id
 
     override val primaryKey = PrimaryKey(id)
