@@ -3,6 +3,10 @@ package com.joshrose.sockets
 import com.joshrose.Connection
 import com.joshrose.chat_model.ChatMessage
 import com.joshrose.chat_model.Functions.*
+import com.joshrose.models.Chat
+import com.joshrose.plugins.cacheDao
+import com.joshrose.plugins.chatDao
+import com.joshrose.plugins.dao
 import com.joshrose.plugins.groupChatDao
 import com.joshrose.responses.SendChatResponse
 import com.joshrose.responses.SimpleResponse
@@ -51,6 +55,7 @@ suspend fun DefaultWebSocketServerSession.handleIncomingFrames(server: ChatServe
             call.application.environment.log.info("Chat Message: ${json.encodeToString(message)}")
             call.application.environment.log.info("Chat response: ${json.encodeToString(process)}")
             val response = SendChatResponse(successful = process.successful, message = message)
+            writeToCache(response, connection)
             connection.session.send(Json.encodeToString<SendChatResponse>(response))
         }
     }
@@ -69,3 +74,20 @@ suspend fun delegateMessageProcessing(message: ChatMessage, server: ChatServer, 
         }
         ERROR -> { SimpleResponse(true, "") }
     }
+
+suspend fun getOrCreateChat(userOne: Int, userTwo: Int): Chat =
+    chatDao.chat(userOne, userTwo) ?: chatDao.addChat(userOne, userTwo)!!
+
+suspend fun writeToCache(response: SendChatResponse, connection: Connection) {
+    if (response.message.function == INDIVIDUAL && response.successful && dao.user(connection.name)!!.cache) {
+        with (Pair(dao.userID(response.message.sender)!!, dao.userID(response.message.recipientOrGroup.toUsername())!!)) {
+            cacheDao.add(
+                message = response.message.message,
+                sender = first,
+                primaryUser = dao.userID(connection.name)!!,
+                error = null,
+                chat = getOrCreateChat(first, second).id
+            )
+        }
+    }
+}
