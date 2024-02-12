@@ -31,4 +31,7 @@ object Constants {
     const val UNAUTHORIZED = "Token is not valid or has expired"
     const val UNKNOWN_ERROR = "An unknown error occurred"
     const val TOKEN_VALIDITY = 600000
+
+    const val FRIEND_CHAT_SOCKET_ROUTE = "/chat/{chatID}"
+    const val GROUP_CHAT_SOCKET_ROUTE = "/group_chat/{groupID}"
 }
