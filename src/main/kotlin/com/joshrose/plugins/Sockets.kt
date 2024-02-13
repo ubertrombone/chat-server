@@ -2,6 +2,7 @@ package com.joshrose.plugins
 
 import com.joshrose.sockets.chatRequest
 import com.joshrose.sockets.chatSocket
+import com.joshrose.sockets.friendChatSocket
 import com.joshrose.sockets.groupChatRequest
 import io.ktor.serialization.kotlinx.*
 import io.ktor.server.application.*
@@ -21,6 +22,7 @@ fun Application.configureSockets() {
     routing {
         chatRequest()
         chatSocket()
+        friendChatSocket()
         groupChatRequest()
     }
 }
