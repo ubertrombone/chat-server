@@ -5,15 +5,25 @@ import com.joshrose.chat_model.FriendChatMessage
 import com.joshrose.models.Cache
 import com.joshrose.plugins.cacheDao
 import com.joshrose.plugins.dao
+import com.joshrose.responses.SendFriendChatResponse
 import com.joshrose.responses.SimpleResponse
+import com.joshrose.util.Username
+import io.ktor.server.websocket.*
 import io.ktor.websocket.*
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.*
 
-class FriendChatServer(private val chatId: Int) : Server {
+class FriendChatServer(
+    private val session: DefaultWebSocketServerSession,
+    private val chatId: Int
+) : Server {
+    private val json = Json { prettyPrint = true }
     private val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
 
+    override suspend fun establishConnection(username: Username): Connection =
+        Connection(session, username).also { addConnection(it) }
     override suspend fun addConnection(connection: Connection) = connections.add(connection)
     override suspend fun removeConnection(connection: Connection) = connections.remove(connection)
 
@@ -49,4 +59,21 @@ class FriendChatServer(private val chatId: Int) : Server {
                 chat = chatId
             )
         }
+
+    override suspend fun handleIncomingFrames(connection: Connection) =
+        session.incoming.consumeEach { frame ->
+            if (frame is Frame.Text) with (receiveMessage(frame.readText())) {
+                connection.session.send(json.encodeToString<SendFriendChatResponse>(
+                    SendFriendChatResponse(successful = processMessage(this).successful, message = this)
+                ))
+            }
+        }
+
+    private fun receiveMessage(frame: String): FriendChatMessage =
+        json.decodeFromString<FriendChatMessage>(frame)
+            .also { session.call.application.environment.log.info("Chat Message: ${json.encodeToString(it)}") }
+
+    private suspend fun processMessage(message: FriendChatMessage): SimpleResponse =
+        sendMessage(message)
+            .also { session.call.application.environment.log.info("Chat response: ${json.encodeToString(it)}") }
 }
