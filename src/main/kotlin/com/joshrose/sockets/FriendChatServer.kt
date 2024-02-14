@@ -11,6 +11,7 @@ import com.joshrose.util.Username
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.delay
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.*
@@ -27,11 +28,21 @@ class FriendChatServer(
     override suspend fun addConnection(connection: Connection) = connections.add(connection)
     override suspend fun removeConnection(connection: Connection) = connections.remove(connection)
 
-    override suspend fun sendMessage(message: FriendChatMessage): SimpleResponse =
-        connections.findConnectionByUsername(message.recipient.name)?.let { handleOnlineUser(it, message) }
-            ?: SimpleResponse(false, "Could not find user: ${message.recipient}")
+    override suspend fun <T> sendMessage(message: T): SimpleResponse =
+        runCatching { waitForUser(message as FriendChatMessage) }
+            .getOrElse { SimpleResponse(false, "Invalid message type") }
 
-    // TODO: A function that responds if other user has successfully been added to connections?
+    private suspend fun waitForUser(message: FriendChatMessage, elapsedTime: Int = 0): SimpleResponse =
+        connections.findConnectionByUsername(message.recipient.name)?.let { handleOnlineUser(it, message) }
+            ?: when {
+                !dao.usernameExists(message.recipient) -> SimpleResponse(false, "Could not find user: ${message.recipient}")
+                !dao.user(message.recipient)!!.isOnline -> SimpleResponse(false, "${message.recipient} is offline")
+                elapsedTime == 31 -> SimpleResponse(false, "Could not send message to ${message.recipient}")
+                else -> {
+                    delay(1000)
+                    waitForUser(message, elapsedTime + 1)
+                }
+            }
 
     private suspend fun handleOnlineUser(connection: Connection, message: FriendChatMessage): SimpleResponse =
         if (sendMessageToUser(connection, message)) cacheMessage(connection, message)
