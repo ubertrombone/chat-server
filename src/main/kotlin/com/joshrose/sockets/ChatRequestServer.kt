@@ -1,12 +1,10 @@
 package com.joshrose.sockets
 
 import com.joshrose.Connection
-import com.joshrose.chat_model.FriendChatMessage
 import com.joshrose.chat_model.OpenChatRequest
 import com.joshrose.plugins.chatDao
 import com.joshrose.plugins.dao
 import com.joshrose.responses.ChatEndPointResponse
-import com.joshrose.responses.SimpleResponse
 import com.joshrose.util.Username
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
@@ -24,17 +22,16 @@ class ChatRequestServer(private val session: DefaultWebSocketServerSession) {
     private fun addConnection(connection: Connection): Boolean = connections.add(connection)
     fun removeConnection(connection: Connection): Boolean = connections.remove(connection)
 
-    private suspend fun sendRequest(request: OpenChatRequest): ChatEndPointResponse =
-        connections.findConnectionByUsername(request.recipient)?.let { handleOnlineUser(it, request) }
+    private suspend fun sendRequest(request: OpenChatRequest, chatId: Int): ChatEndPointResponse =
+        connections.findConnectionByUsername(request.recipient)?.let { handleOnlineUser(it, chatId) }
             ?: ChatEndPointResponse(false, -1)
 
-    private suspend fun handleOnlineUser(connection: Connection, request: OpenChatRequest): ChatEndPointResponse =
-        if (sendRequestToUser(connection, request)) ChatEndPointResponse(true, getOrCreateChat(request))
+    private suspend fun handleOnlineUser(connection: Connection, chatId: Int): ChatEndPointResponse =
+        if (sendRequestToUser(connection, chatId)) ChatEndPointResponse(true, chatId)
         else ChatEndPointResponse(false, -1)
 
-    // TODO: We want to be sending the chatID to the recipient not the initial request.
-    private suspend fun sendRequestToUser(connection: Connection, request: OpenChatRequest): Boolean =
-        runCatching { connection.session.send(Json.encodeToString(request)) }.isSuccess
+    private suspend fun sendRequestToUser(connection: Connection, chatId: Int): Boolean =
+        runCatching { connection.session.send(Json.encodeToString(ChatEndPointResponse(true, chatId))) }.isSuccess
 
     private suspend fun Set<Connection?>.findConnectionByUsername(user: Int) =
         with(dao.user(user)) { find { it?.name == this?.username } }
@@ -43,7 +40,8 @@ class ChatRequestServer(private val session: DefaultWebSocketServerSession) {
         session.incoming.consumeEach { frame ->
             if (frame is Frame.Text) with (receiveRequest(frame.readText())) {
                 connection.session.send(json.encodeToString<ChatEndPointResponse>(
-                    ChatEndPointResponse(success = processRequest(this).success, chatId = )
+                    this?.let { req -> processRequest(req, getOrCreateChat(req)) }
+                        ?: ChatEndPointResponse(false, -1)
                 ))
             }
         }
@@ -51,11 +49,11 @@ class ChatRequestServer(private val session: DefaultWebSocketServerSession) {
     private suspend fun getOrCreateChat(request: OpenChatRequest): Int =
         chatDao.chat(request.sender, request.recipient)?.id ?: chatDao.addChat(request.sender, request.recipient)!!.id
 
-    private fun receiveRequest(frame: String): OpenChatRequest =
-        json.decodeFromString<OpenChatRequest>(frame)
-            .also { session.call.application.environment.log.info("Chat Message: ${json.encodeToString(it)}") }
+    private fun receiveRequest(frame: String): OpenChatRequest? =
+        runCatching { json.decodeFromString<OpenChatRequest>(frame) }.getOrNull()
+            .also { session.call.application.environment.log.info("Chat Message: ${it?.let { json.encodeToString(it) } ?: "null"}") }
 
-    private suspend fun processRequest(request: OpenChatRequest): ChatEndPointResponse =
-        sendRequest(request)
+    private suspend fun processRequest(request: OpenChatRequest, chatId: Int): ChatEndPointResponse =
+        sendRequest(request, chatId)
             .also { session.call.application.environment.log.info("Chat response: ${json.encodeToString(it)}") }
 }
