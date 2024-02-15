@@ -1,35 +1,24 @@
 package com.joshrose.sockets
 
+import com.joshrose.Constants.CHAT_ROUTE
+import com.joshrose.util.toUsername
+import io.ktor.server.auth.*
+import io.ktor.server.auth.jwt.*
 import io.ktor.server.routing.*
+import io.ktor.server.websocket.*
 
 fun Route.chatRequest() {
-//    val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
-//
-//    webSocket("/chat/{username}") {
-//        val thisConnection = Connection(this)
-//        thisConnection.setUsername(null)
-//        connections += thisConnection
-//        try {
-//            send("${thisConnection.name} connected! There are ${connections.count()} users here.")
-//            for (frame in incoming) {
-//                frame as? Frame.Text ?: continue
-//                try {
-//                    val message = Json.decodeFromString<ChatUtilRequest>(frame.readText())
-//                    when (message.function) {
-//                        "Request" -> connections.forEach { it.session.send(Json.encodeToString(message)) }
-//                        "GroupInvite" -> connections.forEach { it.session.send(Json.encodeToString(message)) }
-//                    }
-//                } catch (e: IllegalArgumentException) {
-//                    println("MESSAGE: ${e.localizedMessage}")
-//                    send("Invalid Request!")
-//                    continue
-//                }
-//            }
-//        } catch (e: Exception) {
-//            println(e.localizedMessage)
-//        } finally {
-//            println("Removing $thisConnection!")
-//            connections -= thisConnection
-//        }
-//    }
+    authenticate {
+        webSocket(CHAT_ROUTE) {
+            val server = ChatRequestServer(this)
+            val userPrincipal = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
+            val thisConnection = server.establishConnection(userPrincipal)
+
+            try {
+                server.handleIncomingFrames(thisConnection)
+            } finally {
+                server.removeConnection(thisConnection)
+            }
+        }
+    }
 }
