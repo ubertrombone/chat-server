@@ -34,4 +34,5 @@ object Constants {
 
     const val FRIEND_CHAT_SOCKET_ROUTE = "/chat/{chatID}"
     const val GROUP_CHAT_SOCKET_ROUTE = "/group_chat/{groupID}"
+    const val CHAT_ROUTE = "/chat"
 }
