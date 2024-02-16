@@ -16,17 +16,20 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.*
 
-class FriendChatServer(
-    private val session: DefaultWebSocketServerSession,
-    private val chatId: Int
-) : Server {
+class FriendChatServer : Server {
     private val json = Json { prettyPrint = true }
     private val connections = Collections.synchronizedSet<Connection?>(LinkedHashSet())
+    private var chatId: Int = -1
 
-    override suspend fun establishConnection(username: Username): Connection =
-        Connection(session, username).also { addConnection(it) }
+    override suspend fun establishConnection(username: Username, chatId: Int, session: DefaultWebSocketServerSession): Connection =
+        Connection(session, username).also { updateProperties(it, chatId) }
     override suspend fun addConnection(connection: Connection) = connections.add(connection)
     override suspend fun removeConnection(connection: Connection) = connections.remove(connection)
+
+    private suspend fun updateProperties(connection: Connection, chatId: Int) {
+        this.chatId = chatId
+        addConnection(connection)
+    }
 
     override suspend fun <T> sendMessage(message: T): SimpleResponse =
         runCatching { waitForUser(message as FriendChatMessage) }
@@ -71,20 +74,20 @@ class FriendChatServer(
             )
         }
 
-    override suspend fun handleIncomingFrames(connection: Connection) =
+    override suspend fun handleIncomingFrames(connection: Connection, session: DefaultWebSocketServerSession) =
         session.incoming.consumeEach { frame ->
-            if (frame is Frame.Text) with (receiveMessage(frame.readText())) {
+            if (frame is Frame.Text) with (receiveMessage(frame.readText(), session)) {
                 connection.session.send(json.encodeToString<SendFriendChatResponse>(
-                    SendFriendChatResponse(successful = processMessage(this).successful, message = this)
+                    SendFriendChatResponse(successful = processMessage(this, session).successful, message = this)
                 ))
             }
         }
 
-    private fun receiveMessage(frame: String): FriendChatMessage =
+    private fun receiveMessage(frame: String, session: DefaultWebSocketServerSession): FriendChatMessage =
         json.decodeFromString<FriendChatMessage>(frame)
             .also { session.call.application.environment.log.info("Chat Message: ${json.encodeToString(it)}") }
 
-    private suspend fun processMessage(message: FriendChatMessage): SimpleResponse =
+    private suspend fun processMessage(message: FriendChatMessage, session: DefaultWebSocketServerSession): SimpleResponse =
         sendMessage(message)
             .also { session.call.application.environment.log.info("Chat response: ${json.encodeToString(it)}") }
 }
