@@ -8,15 +8,16 @@ import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
 
 fun Route.friendChatSocket() {
+    val server = FriendChatServer()
+
     authenticate {
         webSocket(FRIEND_CHAT_SOCKET_ROUTE) {
             val chatId = call.parameters["chatID"]?.toIntOrNull() ?: return@webSocket
-            val server = FriendChatServer(this, chatId)
             val userPrincipal = call.principal<JWTPrincipal>()!!.payload.getClaim("username").asString().toUsername()
-            val thisConnection = server.establishConnection(userPrincipal)
+            val thisConnection = server.establishConnection(userPrincipal, chatId, this)
 
             try {
-                server.handleIncomingFrames(thisConnection)
+                server.handleIncomingFrames(thisConnection, this)
             } finally {
                 server.removeConnection(thisConnection)
             }
