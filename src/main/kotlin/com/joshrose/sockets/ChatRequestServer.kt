@@ -64,9 +64,9 @@ class ChatRequestServer {
 
     private fun receiveRequest(frame: String, session: DefaultWebSocketServerSession): OpenChatRequest? =
         runCatching { json.decodeFromString<OpenChatRequest>(frame) }.getOrNull()
-            .also { session.call.application.environment.log.info("Chat Message: ${it?.let { json.encodeToString(it) } ?: "null"}") }
+            .also { session.call.application.environment.log.info("Chat Request: ${it?.let { json.encodeToString(it) } ?: "null"}") }
 
     private suspend fun processRequest(request: OpenChatRequestIDs, chatId: Int, session: DefaultWebSocketServerSession): ChatEndPointResponse =
         sendRequest(request, chatId)
-            .also { session.call.application.environment.log.info("Chat response: ${json.encodeToString(it)}") }
+            .also { session.call.application.environment.log.info("Chat Request response: ${json.encodeToString(it)}") }
 }
