@@ -29,44 +29,42 @@ class ChatRequestServer {
     private suspend fun updateUserOnline(connection: Connection, isOnline: Boolean) =
         dao.editUser(user = dao.user(connection.name)!!.copy(isOnline = isOnline, lastOnline = Clock.System.now()))
 
-    private suspend fun sendRequest(request: OpenChatRequestIDs, chatId: Int): ChatEndPointResponse =
-        connections.findConnectionByUsername(request.recipient)?.let { handleOnlineUser(it, chatId) }
-            ?: ChatEndPointResponse(false, -1)
-
-    private suspend fun handleOnlineUser(connection: Connection, chatId: Int): ChatEndPointResponse =
-        if (sendRequestToUser(connection, chatId)) ChatEndPointResponse(true, chatId)
-        else ChatEndPointResponse(false, -1)
-
-    private suspend fun sendRequestToUser(connection: Connection, chatId: Int): Boolean =
-        runCatching { connection.session.send(Json.encodeToString(ChatEndPointResponse(true, chatId))) }.isSuccess
-
-    private suspend fun Set<Connection?>.findConnectionByUsername(user: Int) =
-        with(dao.user(user)) { find { it?.name == this?.username } }
-
     suspend fun handleIncomingFrames(connection: Connection, session: DefaultWebSocketServerSession) =
         session.incoming.consumeEach { frame ->
-            if (frame is Frame.Text) with (receiveRequest(frame.readText(), session).convertOpenChatRequestOrNull()) {
+            if (frame is Frame.Text) with (receiveRequest(frame.readText(), session)) {
                 connection.session.send(json.encodeToString<ChatEndPointResponse>(
                     this?.let { req -> processRequest(req, getOrCreateChat(req), session) }
-                        ?: ChatEndPointResponse(false, -1)
+                        ?: ChatEndPointResponse(false, -1, null)
                 ))
             }
         }
 
-    private suspend fun getOrCreateChat(request: OpenChatRequestIDs): Int =
-        chatDao.chat(request.sender, request.recipient)?.id ?: chatDao.addChat(request.sender, request.recipient)!!.id
-
-    private suspend fun OpenChatRequest?.convertOpenChatRequestOrNull(): OpenChatRequestIDs? =
-        this?.let {
-            runCatching { OpenChatRequestIDs(sender = dao.userID(it.sender)!!, recipient = dao.userID(it.recipient)!!) }
-                .getOrNull()
+    private suspend fun getOrCreateChat(request: OpenChatRequest): Int =
+        with (request.convertOpenChatRequest()) {
+            chatDao.chat(sender, recipient)?.id ?: chatDao.addChat(sender, recipient)!!.id
         }
+
+    private suspend fun OpenChatRequest.convertOpenChatRequest(): OpenChatRequestIDs =
+        OpenChatRequestIDs(sender = dao.userID(sender)!!, recipient = dao.userID(recipient)!!)
 
     private fun receiveRequest(frame: String, session: DefaultWebSocketServerSession): OpenChatRequest? =
         runCatching { json.decodeFromString<OpenChatRequest>(frame) }.getOrNull()
             .also { session.call.application.environment.log.info("Chat Request: ${it?.let { json.encodeToString(it) } ?: "null"}") }
 
-    private suspend fun processRequest(request: OpenChatRequestIDs, chatId: Int, session: DefaultWebSocketServerSession): ChatEndPointResponse =
+    private suspend fun processRequest(request: OpenChatRequest, chatId: Int, session: DefaultWebSocketServerSession): ChatEndPointResponse =
         sendRequest(request, chatId)
             .also { session.call.application.environment.log.info("Chat Request response: ${json.encodeToString(it)}") }
+
+    private suspend fun sendRequest(request: OpenChatRequest, chatId: Int): ChatEndPointResponse =
+        connections.findConnectionByUsername(request.recipient)?.let { handleOnlineUser(it, chatId, request) }
+            ?: ChatEndPointResponse(false, -1, request)
+
+    private suspend fun handleOnlineUser(connection: Connection, chatId: Int, request: OpenChatRequest): ChatEndPointResponse =
+        if (sendRequestToUser(connection, chatId, request)) ChatEndPointResponse(true, chatId, request)
+        else ChatEndPointResponse(false, -1, request)
+
+    private suspend fun sendRequestToUser(connection: Connection, chatId: Int, request: OpenChatRequest): Boolean =
+        runCatching { connection.session.send(Json.encodeToString(ChatEndPointResponse(true, chatId, request))) }.isSuccess
+
+    private fun Set<Connection?>.findConnectionByUsername(user: Username) = find { it?.name == user }
 }
